@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4f46e5" />
+      <stop offset="50%" stop-color="#3b82f6" />
+      <stop offset="100%" stop-color="#06b6d4" />
+    </linearGradient>
+    <linearGradient id="glowGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
+    </linearGradient>
+    <filter id="dropShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="16" stdDeviation="24" flood-color="#000000" flood-opacity="0.35" />
+    </filter>
+  </defs>
+
+  <!-- Background with smooth rounded squircle -->
+  <rect width="512" height="512" rx="128" fill="url(#bgGrad)" />
+  <rect width="512" height="512" rx="128" fill="url(#glowGrad)" />
+
+  <!-- Outer subtle ring -->
+  <rect x="16" y="16" width="480" height="480" rx="116" fill="none" stroke="#ffffff" stroke-opacity="0.2" stroke-width="4" />
+
+  <!-- Main Symbol: Dynamic RUDACTIVITY 'R' + Activity Pulse -->
+  <g filter="url(#dropShadow)" transform="translate(4, 0)">
+    <!-- Main stem of R -->
+    <path d="M 160 128 L 220 128 L 220 384 L 160 384 Z" fill="#ffffff" />
+    
+    <!-- Top loop of R -->
+    <path d="M 216 128 L 288 128 C 344 128 376 156 376 208 C 376 256 344 284 288 284 L 216 284 Z" fill="#ffffff" />
+    <path d="M 220 178 L 280 178 C 308 178 322 190 322 208 C 322 226 308 238 280 238 L 220 238 Z" fill="url(#bgGrad)" />
+    
+    <!-- Dynamic kick / Activity wave of R -->
+    <path d="M 264 268 L 360 384 L 296 384 L 216 284 L 264 268 Z" fill="#ffffff" />
+    
+    <!-- Activity pulse orb dot -->
+    <circle cx="380" cy="156" r="24" fill="#38bdf8" stroke="#ffffff" stroke-width="6" />
+  </g>
+</svg>

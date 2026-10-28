@@ -1,0 +1,509 @@
+{
+  "users": {
+    "user_admin": {
+      "id": "user_admin",
+      "name": "URIRUDAKEMWA",
+      "username": "URIRUDAKEMWA",
+      "email": "urirudakemwa@secure.local",
+      "phone": "+250 788 000 001",
+      "avatar": "/src/assets/images/rudactivity_logo_1793024816643.jpg",
+      "role": "superadmin",
+      "bio": "Super Administrator.",
+      "isOnline": true,
+      "lastSeen": "2026-10-28T15:56:12.666Z",
+      "statusText": "Umutekano Wihariye",
+      "isVerified": true,
+      "twoFactorEnabled": false,
+      "createdAt": "2026-10-26T14:38:20.640Z",
+      "passwordHash": "3872d0ca8978ea23d2643b38c629e0a81dbc62d62a0c8f0fc252b683ef6a227f8e23b9e75cf2392633cc965413e9e6c83527d026cc261d83425f9a1459b28cf8",
+      "salt": "e92876ae23235dc282c06d97dc2d74de",
+      "privacySettings": {
+        "lastSeenVisibility": "everyone",
+        "profilePhotoVisibility": "everyone",
+        "whoCanCallMe": "everyone",
+        "readReceipts": true,
+        "whoCanAddToGroups": "everyone"
+      },
+      "blockedUserIds": [],
+      "superAdminPin": "Birakenewe?"
+    },
+    "user_sarah": {
+      "id": "user_sarah",
+      "name": "Sarah Jenkins",
+      "username": "sarah_dev",
+      "email": "sarah.jenkins@example.com",
+      "phone": "+44 7700 900077",
+      "avatar": "/src/assets/images/avatar_sarah_1793024817988.jpg",
+      "role": "user",
+      "bio": "Distributed systems architect & WebRTC enthusiast. Based in London.",
+      "isOnline": false,
+      "lastSeen": "2026-10-28T15:54:07.079Z",
+      "statusText": "Coding with music 🎧",
+      "isVerified": true,
+      "twoFactorEnabled": false,
+      "createdAt": "2026-10-26T14:38:20.640Z",
+      "passwordHash": "d87a24e1a7ef4a79e196ef3760a6febc2d28817e0897bd5bcff2665b82efdd109cdda3087e363b8871f44b873cd4cfa82041d142583e21bc83b6ea2e6047ef95",
+      "salt": "d85ffd7165cbcf0d1716bb76ee189015",
+      "privacySettings": {
+        "lastSeenVisibility": "everyone",
+        "profilePhotoVisibility": "everyone",
+        "whoCanCallMe": "everyone",
+        "readReceipts": true,
+        "whoCanAddToGroups": "everyone"
+      },
+      "blockedUserIds": []
+    },
+    "user_david": {
+      "id": "user_david",
+      "name": "David Chen",
+      "username": "david_ux",
+      "email": "david.chen@example.com",
+      "phone": "+1 415 555 0188",
+      "avatar": "/src/assets/images/avatar_david_1793024817905.jpg",
+      "role": "moderator",
+      "bio": "Product Designer at RUDACTIVITY. Obsessed with clean typography and fast interfaces.",
+      "isOnline": false,
+      "lastSeen": "2026-10-28T15:55:45.453Z",
+      "statusText": "Refining design system",
+      "isVerified": true,
+      "twoFactorEnabled": false,
+      "createdAt": "2026-10-26T14:38:20.640Z",
+      "passwordHash": "94d2c2fee05b85adc944e07984a9f453753c51da96157f6789b583577edbff51eb5cf218fe90e96c0f4493ba9c8ad8c3d677b7ac01593617bb47ea55a3e153ac",
+      "salt": "03b29f6d631013cec75d1428b12f20a4",
+      "privacySettings": {
+        "lastSeenVisibility": "everyone",
+        "profilePhotoVisibility": "everyone",
+        "whoCanCallMe": "everyone",
+        "readReceipts": true,
+        "whoCanAddToGroups": "everyone"
+      },
+      "blockedUserIds": []
+    },
+    "user_amara": {
+      "id": "user_amara",
+      "name": "Amara Diallo",
+      "username": "amara_cloud",
+      "email": "amara.diallo@example.com",
+      "phone": "+33 612 345678",
+      "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+      "role": "user",
+      "bio": "Cloud engineer & open source contributor. Love real-time systems.",
+      "isOnline": false,
+      "lastSeen": "2026-10-26T13:38:20.664Z",
+      "statusText": "Offline for maintenance",
+      "isVerified": true,
+      "twoFactorEnabled": false,
+      "createdAt": "2026-10-26T14:38:20.640Z",
+      "passwordHash": "18cfd176297395f60cf27f83e338a3c595f3bdd49af32ec7ee652b00b0451bad04c6ed333012dfa738983b15827f40d935a704e3b988b01bd831e34f4234ced8",
+      "salt": "ce58a9cf52e0f39a93bae43c15e98d4f",
+      "privacySettings": {
+        "lastSeenVisibility": "everyone",
+        "profilePhotoVisibility": "everyone",
+        "whoCanCallMe": "everyone",
+        "readReceipts": true,
+        "whoCanAddToGroups": "everyone"
+      },
+      "blockedUserIds": []
+    },
+    "user_1793025511287_ihgx": {
+      "id": "user_1793025511287_ihgx",
+      "name": "International Explorer",
+      "username": "explorer_global",
+      "email": "explorer@domain.com",
+      "avatar": "/src/assets/images/avatar_sarah_1793024817988.jpg",
+      "role": "user",
+      "bio": "Hey there! I am using RUDACTIVITY.",
+      "isOnline": true,
+      "lastSeen": "2026-10-26T14:38:31.287Z",
+      "statusText": "Available",
+      "isVerified": true,
+      "twoFactorEnabled": false,
+      "createdAt": "2026-10-26T14:38:31.287Z",
+      "passwordHash": "9d79f9ad21a88c81012c8f638810ec81d08c581d2253a2f0cb22efeefe9e3b826ccb9069b2aa2b8ee2fb8d2cec27bce822ea4918fba594897b791a99cf30b80a",
+      "salt": "1c9bd73fd776126d77c5baeaa8be7aa8",
+      "privacySettings": {
+        "lastSeenVisibility": "everyone",
+        "profilePhotoVisibility": "everyone",
+        "whoCanCallMe": "everyone",
+        "readReceipts": true,
+        "whoCanAddToGroups": "everyone"
+      },
+      "blockedUserIds": []
+    },
+    "user_1793202146032_7c8u": {
+      "id": "user_1793202146032_7c8u",
+      "name": "Gatete Patrick",
+      "username": "gatete_p",
+      "email": "gatete@gmail.com",
+      "phone": "+250 788 555 123",
+      "avatar": "/src/assets/images/avatar_sarah_1793024817988.jpg",
+      "role": "user",
+      "bio": "Hey there! I am using RUDACTIVITY.",
+      "isOnline": true,
+      "lastSeen": "2026-10-28T15:42:29.564Z",
+      "statusText": "Available",
+      "isVerified": true,
+      "twoFactorEnabled": false,
+      "createdAt": "2026-10-28T15:42:26.032Z",
+      "passwordHash": "d513a07b257eaecb9fa159e444ae730633777c8b6c7e33c45795e5a548c4592c4296a2f66729a57eb490d7280719e9ea73f92573e65bffd6aa9c53b9c8ea1be8",
+      "salt": "50dd50fb81c9781ed075e2b7b94b05ad",
+      "privacySettings": {
+        "lastSeenVisibility": "everyone",
+        "profilePhotoVisibility": "everyone",
+        "whoCanCallMe": "everyone",
+        "readReceipts": true,
+        "whoCanAddToGroups": "everyone"
+      },
+      "blockedUserIds": []
+    }
+  },
+  "sessions": {
+    "b300e11d6af14542d721331582a0f529c27ecf3eeb6db347308295b75d512fc3": {
+      "userId": "user_admin",
+      "createdAt": "2026-10-26T14:38:26.462Z",
+      "expiresAt": "2026-11-25T14:38:26.462Z"
+    },
+    "0e831377768929aebb777a7528b8f05599f4d459851b7515b5ff9ce22a453c57": {
+      "userId": "user_1793025511287_ihgx",
+      "createdAt": "2026-10-26T14:38:31.287Z",
+      "expiresAt": "2026-11-25T14:38:31.287Z"
+    },
+    "c0dc01ce755706c2e08ef5173e232c73fad4091832868c19514e37dc88193a8e": {
+      "userId": "user_admin",
+      "createdAt": "2026-10-28T15:42:11.448Z",
+      "expiresAt": "2026-11-27T15:42:11.448Z"
+    },
+    "12eb564451a2d11ac55cbb79f9f0e14b091a8dda9237b17dcaf290a0108caa2e": {
+      "userId": "user_1793202146032_7c8u",
+      "createdAt": "2026-10-28T15:42:26.032Z",
+      "expiresAt": "2026-11-27T15:42:26.033Z"
+    },
+    "3d008afdc8ca32addab1f34c52c49607c5722c0a0af883d1aeff72cfdf97d84a": {
+      "userId": "user_1793202146032_7c8u",
+      "createdAt": "2026-10-28T15:42:29.564Z",
+      "expiresAt": "2026-11-27T15:42:29.564Z"
+    },
+    "4104afe8c8599e46b10b7dd374eec27c6269ad06475668e188e49e8013e457e8": {
+      "userId": "user_admin",
+      "createdAt": "2026-10-28T15:56:07.713Z",
+      "expiresAt": "2026-11-27T15:56:07.714Z"
+    },
+    "2aae5ce996f37814c1dfb50f3467bfcb71fde5a8f0da340b45733f4c7bbc99c0": {
+      "userId": "user_admin",
+      "createdAt": "2026-10-28T15:56:12.666Z",
+      "expiresAt": "2026-11-27T15:56:12.666Z"
+    }
+  },
+  "conversations": {
+    "conv_official_channel": {
+      "id": "conv_official_channel",
+      "type": "channel",
+      "title": "RUDACTIVITY Official Announcements",
+      "avatar": "/src/assets/images/rudactivity_logo_1793024816643.jpg",
+      "description": "The official broadcast channel for RUDACTIVITY platform releases, security updates, and global community news.",
+      "isPublic": true,
+      "inviteLink": "https://rudactivity.app/c/official",
+      "creatorId": "user_admin",
+      "participantIds": [
+        "user_admin",
+        "user_sarah",
+        "user_david",
+        "user_amara",
+        "user_1793025511287_ihgx",
+        "user_1793202146032_7c8u"
+      ],
+      "adminIds": [
+        "user_admin",
+        "user_david"
+      ],
+      "participants": {
+        "user_admin": {
+          "userId": "user_admin",
+          "role": "owner",
+          "joinedAt": "2026-10-26T14:38:20.640Z",
+          "unreadCount": 0
+        },
+        "user_sarah": {
+          "userId": "user_sarah",
+          "role": "member",
+          "joinedAt": "2026-10-26T14:38:20.640Z",
+          "unreadCount": 0
+        },
+        "user_david": {
+          "userId": "user_david",
+          "role": "admin",
+          "joinedAt": "2026-10-26T14:38:20.640Z",
+          "unreadCount": 0
+        },
+        "user_amara": {
+          "userId": "user_amara",
+          "role": "member",
+          "joinedAt": "2026-10-26T14:38:20.640Z",
+          "unreadCount": 0
+        },
+        "user_1793025511287_ihgx": {
+          "userId": "user_1793025511287_ihgx",
+          "role": "member",
+          "joinedAt": "2026-10-26T14:38:31.287Z",
+          "unreadCount": 0
+        },
+        "user_1793202146032_7c8u": {
+          "userId": "user_1793202146032_7c8u",
+          "role": "member",
+          "joinedAt": "2026-10-28T15:42:26.032Z",
+          "unreadCount": 0
+        }
+      },
+      "createdAt": "2026-10-26T14:38:20.640Z",
+      "updatedAt": "2026-10-26T14:38:20.640Z",
+      "lastMessage": {
+        "id": "msg_init_2",
+        "senderId": "user_admin",
+        "senderName": "RUDACTIVITY Platform Admin",
+        "content": "WebRTC voice and video calls are active. Click the Call or Video icon in any one-on-one conversation to initiate low-latency media streams.",
+        "type": "text",
+        "createdAt": "2026-10-26T13:38:20.671Z"
+      }
+    },
+    "conv_global_devs": {
+      "id": "conv_global_devs",
+      "type": "group",
+      "title": "Global Tech & Engineering",
+      "avatar": "/src/assets/images/channel_cover_tech_1793024818739.jpg",
+      "description": "International community group discussing distributed databases, WebRTC, low-latency messaging, and architecture.",
+      "isPublic": false,
+      "inviteLink": "https://rudactivity.app/join/global-devs",
+      "creatorId": "user_david",
+      "participantIds": [
+        "user_admin",
+        "user_sarah",
+        "user_david",
+        "user_amara"
+      ],
+      "adminIds": [
+        "user_david",
+        "user_sarah"
+      ],
+      "participants": {
+        "user_admin": {
+          "userId": "user_admin",
+          "role": "member",
+          "joinedAt": "2026-10-26T14:38:20.640Z",
+          "unreadCount": 0
+        },
+        "user_sarah": {
+          "userId": "user_sarah",
+          "role": "admin",
+          "joinedAt": "2026-10-26T14:38:20.640Z",
+          "unreadCount": 0
+        },
+        "user_david": {
+          "userId": "user_david",
+          "role": "owner",
+          "joinedAt": "2026-10-26T14:38:20.640Z",
+          "unreadCount": 0
+        },
+        "user_amara": {
+          "userId": "user_amara",
+          "role": "member",
+          "joinedAt": "2026-10-26T14:38:20.640Z",
+          "unreadCount": 0
+        }
+      },
+      "createdAt": "2026-10-26T14:38:20.640Z",
+      "updatedAt": "2026-10-26T14:38:20.640Z",
+      "lastMessage": {
+        "id": "msg_init_4",
+        "senderId": "user_sarah",
+        "senderName": "Sarah Jenkins",
+        "content": "The real-time WebSocket signaling is rock solid. Voice notes and media preview modals are also functioning cleanly.",
+        "type": "text",
+        "createdAt": "2026-10-26T14:23:20.671Z"
+      }
+    },
+    "conv_dm_sarah_david": {
+      "id": "conv_dm_sarah_david",
+      "type": "direct",
+      "title": "Sarah Jenkins",
+      "creatorId": "user_david",
+      "participantIds": [
+        "user_sarah",
+        "user_david"
+      ],
+      "adminIds": [],
+      "participants": {
+        "user_sarah": {
+          "userId": "user_sarah",
+          "role": "member",
+          "joinedAt": "2026-10-26T14:38:20.640Z",
+          "unreadCount": 1
+        },
+        "user_david": {
+          "userId": "user_david",
+          "role": "member",
+          "joinedAt": "2026-10-26T14:38:20.640Z",
+          "unreadCount": 0
+        }
+      },
+      "createdAt": "2026-10-26T14:38:20.640Z",
+      "updatedAt": "2026-10-28T15:54:29.996Z",
+      "lastMessage": {
+        "id": "msg_1793202869996_gyvvc",
+        "senderId": "user_david",
+        "senderName": "David Chen",
+        "content": "hi",
+        "type": "text",
+        "createdAt": "2026-10-28T15:54:29.996Z"
+      }
+    },
+    "conv_dm_1793202904424_dtx6": {
+      "id": "conv_dm_1793202904424_dtx6",
+      "type": "direct",
+      "title": "Amara Diallo",
+      "creatorId": "user_david",
+      "participantIds": [
+        "user_david",
+        "user_amara"
+      ],
+      "adminIds": [],
+      "participants": {
+        "user_david": {
+          "userId": "user_david",
+          "role": "member",
+          "joinedAt": "2026-10-28T15:55:04.424Z",
+          "unreadCount": 0
+        },
+        "user_amara": {
+          "userId": "user_amara",
+          "role": "member",
+          "joinedAt": "2026-10-28T15:55:04.424Z",
+          "unreadCount": 0
+        }
+      },
+      "createdAt": "2026-10-28T15:55:04.424Z",
+      "updatedAt": "2026-10-28T15:55:04.424Z"
+    }
+  },
+  "messages": {
+    "msg_init_1": {
+      "id": "msg_init_1",
+      "conversationId": "conv_official_channel",
+      "senderId": "user_admin",
+      "senderName": "RUDACTIVITY Platform Admin",
+      "senderAvatar": "/src/assets/images/rudactivity_logo_1793024816643.jpg",
+      "content": "Welcome to RUDACTIVITY! 🚀 We have launched high-performance real-time messaging, end-to-end WebSockets, audio/video peer calling, rich media sharing, and community groups.",
+      "type": "text",
+      "reactions": {
+        "🔥": [
+          "user_sarah",
+          "user_david"
+        ],
+        "👏": [
+          "user_amara"
+        ]
+      },
+      "isEdited": false,
+      "isPinned": true,
+      "status": "read",
+      "createdAt": "2026-10-26T12:38:20.671Z"
+    },
+    "msg_init_2": {
+      "id": "msg_init_2",
+      "conversationId": "conv_official_channel",
+      "senderId": "user_admin",
+      "senderName": "RUDACTIVITY Platform Admin",
+      "senderAvatar": "/src/assets/images/rudactivity_logo_1793024816643.jpg",
+      "content": "WebRTC voice and video calls are active. Click the Call or Video icon in any one-on-one conversation to initiate low-latency media streams.",
+      "type": "text",
+      "reactions": {
+        "❤️": [
+          "user_sarah"
+        ]
+      },
+      "isEdited": false,
+      "isPinned": false,
+      "status": "read",
+      "createdAt": "2026-10-26T13:38:20.671Z"
+    },
+    "msg_init_3": {
+      "id": "msg_init_3",
+      "conversationId": "conv_global_devs",
+      "senderId": "user_david",
+      "senderName": "David Chen",
+      "senderAvatar": "/src/assets/images/avatar_david_1793024817905.jpg",
+      "content": "Hey everyone! Check out the newly styled dark and light themes. We focused on clean zero-pill typography and instant reactions.",
+      "type": "text",
+      "reactions": {
+        "👍": [
+          "user_sarah"
+        ]
+      },
+      "isEdited": false,
+      "isPinned": false,
+      "status": "read",
+      "createdAt": "2026-10-26T14:08:20.671Z"
+    },
+    "msg_init_4": {
+      "id": "msg_init_4",
+      "conversationId": "conv_global_devs",
+      "senderId": "user_sarah",
+      "senderName": "Sarah Jenkins",
+      "senderAvatar": "/src/assets/images/avatar_sarah_1793024817988.jpg",
+      "content": "The real-time WebSocket signaling is rock solid. Voice notes and media preview modals are also functioning cleanly.",
+      "type": "text",
+      "reactions": {
+        "✨": [
+          "user_david"
+        ]
+      },
+      "isEdited": false,
+      "isPinned": false,
+      "status": "read",
+      "createdAt": "2026-10-26T14:23:20.671Z"
+    },
+    "msg_1793202869996_gyvvc": {
+      "id": "msg_1793202869996_gyvvc",
+      "conversationId": "conv_dm_sarah_david",
+      "senderId": "user_david",
+      "senderName": "David Chen",
+      "senderAvatar": "/src/assets/images/avatar_david_1793024817905.jpg",
+      "content": "hi",
+      "type": "text",
+      "attachments": [],
+      "reactions": {},
+      "isEdited": false,
+      "isPinned": false,
+      "status": "sent",
+      "createdAt": "2026-10-28T15:54:29.996Z"
+    }
+  },
+  "conversationMessages": {
+    "conv_official_channel": [
+      "msg_init_1",
+      "msg_init_2"
+    ],
+    "conv_global_devs": [
+      "msg_init_3",
+      "msg_init_4"
+    ],
+    "conv_dm_sarah_david": [
+      "msg_1793202869996_gyvvc"
+    ],
+    "conv_dm_1793202904424_dtx6": []
+  },
+  "callRecords": [],
+  "reports": [],
+  "auditLogs": [
+    {
+      "id": "audit_init",
+      "adminId": "user_admin",
+      "adminUsername": "rudactivity_admin",
+      "action": "SYSTEM_INITIALIZED",
+      "target": "Platform Core",
+      "metadata": {
+        "version": "1.0.0"
+      },
+      "timestamp": "2026-10-26T14:38:20.640Z"
+    }
+  ]
+}

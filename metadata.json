@@ -1,0 +1,6 @@
+{
+  "name": "RUDACTIVITY - Modern Social Messaging & Calls",
+  "description": "High-performance, secure international social messaging platform featuring real-time chat, voice & video calls, channels, groups, and media sharing.",
+  "requestFramePermissions": ["camera", "microphone", "display-capture"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
