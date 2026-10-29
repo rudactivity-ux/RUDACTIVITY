@@ -6,8 +6,11 @@ interface AuthContextType {
   token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (identifier: string, pass: string) => Promise<{ success: boolean; error?: string }>;
-  register: (data: { name: string; username: string; email: string; password: string; phone?: string }) => Promise<{ success: boolean; error?: string }>;
+  login: (identifier: string, pass: string) => Promise<{ success: boolean; error?: string; message?: string }>;
+  googleLogin: (data: { email: string; name: string; picture?: string; sub?: string; googleToken?: string }) => Promise<{ success: boolean; error?: string }>;
+  register: (data: { name: string; username: string; email: string; password: string; confirmPassword?: string; phone?: string; bio?: string; avatar?: string }) => Promise<{ success: boolean; error?: string; message?: string }>;
+  forgotPassword: (email: string) => Promise<{ success: boolean; error?: string; message?: string; codePreview?: string }>;
+  resetPassword: (data: { email: string; code: string; newPassword: string; confirmPassword?: string }) => Promise<{ success: boolean; error?: string; message?: string }>;
   logout: () => Promise<void>;
   updateProfile: (data: Partial<User>) => Promise<boolean>;
   changePassword: (curr: string, next: string) => Promise<{ success: boolean; error?: string }>;
@@ -26,6 +29,20 @@ const defaultPrivacy: PrivacySettings = {
   readReceipts: true,
   whoCanAddToGroups: 'everyone',
 };
+
+async function parseJsonResponse(res: Response, fallbackError = 'Request failed') {
+  const contentType = res.headers.get('content-type') || '';
+  if (contentType.includes('application/json')) {
+    try {
+      return await res.json();
+    } catch (e) {
+      return { error: 'Invalid JSON response from server.' };
+    }
+  }
+  const text = await res.text();
+  console.error('Server returned non-JSON response:', res.status, text.slice(0, 200));
+  return { error: res.ok ? fallbackError : `Server error (${res.status}). Please try again.` };
+}
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -47,9 +64,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           headers: { Authorization: `Bearer ${token}` },
         });
         if (res.ok) {
-          const data = await res.json();
-          setUser(data.user);
-          loadPrivacy(token);
+          const data = await parseJsonResponse(res);
+          if (data && data.user) {
+            setUser(data.user);
+            loadPrivacy(token);
+          } else {
+            localStorage.removeItem('rudactivity_token');
+            setToken(null);
+            setUser(null);
+          }
         } else {
           // Token expired or invalid
           localStorage.removeItem('rudactivity_token');
@@ -71,8 +94,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         headers: { Authorization: `Bearer ${authToken}` },
       });
       if (res.ok) {
-        const data = await res.json();
-        setPrivacySettings(data.privacySettings);
+        const data = await parseJsonResponse(res);
+        if (data && data.privacySettings) {
+          setPrivacySettings(data.privacySettings);
+        }
       }
     } catch (err) {
       console.error('Failed to load privacy settings:', err);
@@ -86,9 +111,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ loginIdentifier: identifier, password: pass }),
       });
-      const data = await res.json();
+      const data = await parseJsonResponse(res, 'Login failed');
       if (!res.ok) {
-        return { success: false, error: data.error || 'Login failed' };
+        return { success: false, error: data.error || 'Login failed. Please check your credentials.' };
+      }
+      localStorage.setItem('rudactivity_token', data.token);
+      setToken(data.token);
+      setUser(data.user);
+      loadPrivacy(data.token);
+      return { success: true, message: data.message || 'Logged in successfully.' };
+    } catch (err: any) {
+      return { success: false, error: err.message || 'Network error occurred during login.' };
+    }
+  };
+
+  const googleLogin = async (googleData: { email: string; name: string; picture?: string; sub?: string; googleToken?: string }) => {
+    try {
+      const res = await fetch('/api/auth/google', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(googleData),
+      });
+      const data = await parseJsonResponse(res, 'Google authentication failed');
+      if (!res.ok) {
+        return { success: false, error: data.error || 'Google authentication failed' };
       }
       localStorage.setItem('rudactivity_token', data.token);
       setToken(data.token);
@@ -96,18 +142,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       loadPrivacy(data.token);
       return { success: true };
     } catch (err: any) {
-      return { success: false, error: err.message || 'Network error' };
+      return { success: false, error: err.message || 'Network error during Google authentication' };
     }
   };
 
-  const register = async (regData: { name: string; username: string; email: string; password: string; phone?: string }) => {
+  const register = async (regData: {
+    name: string;
+    username: string;
+    email: string;
+    password: string;
+    confirmPassword?: string;
+    phone?: string;
+    bio?: string;
+    avatar?: string;
+  }) => {
     try {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(regData),
       });
-      const data = await res.json();
+      const data = await parseJsonResponse(res, 'Registration failed');
       if (!res.ok) {
         return { success: false, error: data.error || 'Registration failed' };
       }
@@ -115,9 +170,58 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setToken(data.token);
       setUser(data.user);
       loadPrivacy(data.token);
-      return { success: true };
+      return { success: true, message: data.message || 'Account created successfully! Welcome to RUDACTIVITY.' };
     } catch (err: any) {
-      return { success: false, error: err.message || 'Network error' };
+      return { success: false, error: err.message || 'Network error occurred during registration.' };
+    }
+  };
+
+  const forgotPassword = async (email: string) => {
+    try {
+      const res = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const data = await parseJsonResponse(res, 'Failed to request password reset');
+      if (!res.ok) {
+        return { success: false, error: data.error || 'Password reset request failed' };
+      }
+      return {
+        success: true,
+        message: data.message,
+        codePreview: data.codePreview,
+      };
+    } catch (err: any) {
+      return { success: false, error: err.message || 'Network error requesting password reset.' };
+    }
+  };
+
+  const resetPassword = async (payload: {
+    email: string;
+    code: string;
+    newPassword: string;
+    confirmPassword?: string;
+  }) => {
+    try {
+      const res = await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await parseJsonResponse(res, 'Failed to reset password');
+      if (!res.ok) {
+        return { success: false, error: data.error || 'Failed to reset password' };
+      }
+      if (data.token && data.user) {
+        localStorage.setItem('rudactivity_token', data.token);
+        setToken(data.token);
+        setUser(data.user);
+        loadPrivacy(data.token);
+      }
+      return { success: true, message: data.message || 'Password reset successfully!' };
+    } catch (err: any) {
+      return { success: false, error: err.message || 'Network error resetting password.' };
     }
   };
 
@@ -149,9 +253,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         body: JSON.stringify(data),
       });
       if (res.ok) {
-        const resData = await res.json();
-        setUser(resData.user);
-        return true;
+        const resData = await parseJsonResponse(res);
+        if (resData && resData.user) {
+          setUser(resData.user);
+          return true;
+        }
       }
     } catch (err) {
       console.error('Failed to update profile:', err);
@@ -170,7 +276,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         },
         body: JSON.stringify({ currentPassword, newPassword }),
       });
-      const data = await res.json();
+      const data = await parseJsonResponse(res, 'Password change failed');
       if (res.ok) {
         return { success: true };
       }
@@ -192,9 +298,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         body: JSON.stringify({ privacySettings: settings }),
       });
       if (res.ok) {
-        const data = await res.json();
-        setPrivacySettings(data.privacySettings);
-        return true;
+        const data = await parseJsonResponse(res);
+        if (data && data.privacySettings) {
+          setPrivacySettings(data.privacySettings);
+          return true;
+        }
       }
     } catch (err) {
       console.error('Failed to update privacy settings:', err);
@@ -214,9 +322,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         body: JSON.stringify({ targetUserId: targetId }),
       });
       if (res.ok) {
-        const data = await res.json();
-        setBlockedUserIds(data.blockedUserIds || []);
-        return true;
+        const data = await parseJsonResponse(res);
+        if (data && data.blockedUserIds) {
+          setBlockedUserIds(data.blockedUserIds);
+          return true;
+        }
       }
     } catch (err) {
       console.error('Failed to block user:', err);
@@ -236,9 +346,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         body: JSON.stringify({ targetUserId: targetId }),
       });
       if (res.ok) {
-        const data = await res.json();
-        setBlockedUserIds(data.blockedUserIds || []);
-        return true;
+        const data = await parseJsonResponse(res);
+        if (data && data.blockedUserIds) {
+          setBlockedUserIds(data.blockedUserIds);
+          return true;
+        }
       }
     } catch (err) {
       console.error('Failed to unblock user:', err);
@@ -259,7 +371,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isAuthenticated: !!user,
         isLoading,
         login,
+        googleLogin,
         register,
+        forgotPassword,
+        resetPassword,
         logout,
         updateProfile,
         changePassword,
@@ -283,3 +398,4 @@ export const useAuth = () => {
   }
   return context;
 };
+

@@ -142,48 +142,41 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
       </div>
 
-      {/* User Quick Switch Dropdown */}
+      {/* User Account Dropdown */}
       {showUserMenu && (
         <div className="absolute top-14 left-3 z-40 w-64 bg-slate-900 border border-slate-800 rounded-2xl p-2 shadow-2xl animate-in fade-in duration-150">
           <div className="px-3 py-2 border-b border-slate-800">
             <p className="text-xs font-semibold text-white">{user?.name}</p>
-            <p className="text-[10px] text-slate-400">Signed in as @{user?.username}</p>
+            <p className="text-[10px] text-slate-400">@{user?.username}</p>
+            {user?.email && <p className="text-[10px] text-indigo-400 truncate mt-0.5">{user.email}</p>}
           </div>
 
           <div className="py-1">
-            <div className="px-3 py-1 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
-              Quick Switch Demo User
-            </div>
             <button
-              onClick={() => { switchAccount('sarah.jenkins@example.com', 'SarahPass2026!'); setShowUserMenu(false); }}
-              className="w-full text-left px-3 py-1.5 text-xs text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg flex items-center justify-between"
+              onClick={() => { onOpenSettings(); setShowUserMenu(false); }}
+              className="w-full text-left px-3 py-1.5 text-xs text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg flex items-center gap-2 cursor-pointer transition-colors"
             >
-              <span>Sarah Jenkins</span>
-              <span className="text-[10px] text-slate-400">@sarah_dev</span>
+              <Settings size={14} className="text-slate-400" />
+              <span>Account Settings</span>
             </button>
-            <button
-              onClick={() => { switchAccount('david.chen@example.com', 'DavidPass2026!'); setShowUserMenu(false); }}
-              className="w-full text-left px-3 py-1.5 text-xs text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg flex items-center justify-between"
-            >
-              <span>David Chen</span>
-              <span className="text-[10px] text-slate-400">@david_ux</span>
-            </button>
-            <button
-              onClick={() => { switchAccount('amara.diallo@example.com', 'AmaraPass2026!'); setShowUserMenu(false); }}
-              className="w-full text-left px-3 py-1.5 text-xs text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg flex items-center justify-between"
-            >
-              <span>Amara Diallo</span>
-              <span className="text-[10px] text-slate-400">@amara_cloud</span>
-            </button>
+            {isAdmin && (
+              <button
+                onClick={() => { onOpenAdmin(); setShowUserMenu(false); }}
+                className="w-full text-left px-3 py-1.5 text-xs text-indigo-300 hover:text-indigo-200 hover:bg-slate-800 rounded-lg flex items-center gap-2 cursor-pointer transition-colors"
+              >
+                <Shield size={14} className="text-indigo-400" />
+                <span>Admin Dashboard</span>
+              </button>
+            )}
           </div>
 
           <div className="pt-1 border-t border-slate-800">
             <button
               onClick={() => { logout(); setShowUserMenu(false); }}
-              className="w-full text-left px-3 py-1.5 text-xs text-rose-400 hover:bg-rose-500/10 rounded-lg flex items-center gap-2"
+              className="w-full text-left px-3 py-1.5 text-xs text-rose-400 hover:bg-rose-500/10 rounded-lg flex items-center gap-2 cursor-pointer transition-colors"
             >
               <LogOut size={13} />
-              Sign Out
+              <span>Sign Out</span>
             </button>
           </div>
         </div>

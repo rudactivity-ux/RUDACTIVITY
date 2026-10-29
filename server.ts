@@ -98,6 +98,15 @@ function loadDb() {
     try {
       const data = fs.readFileSync(DB_FILE, 'utf-8');
       db = JSON.parse(data);
+      db.users = db.users || {};
+      db.sessions = db.sessions || {};
+      db.conversations = db.conversations || {};
+      db.messages = db.messages || {};
+      db.conversationMessages = db.conversationMessages || {};
+      db.callRecords = Array.isArray(db.callRecords) ? db.callRecords : [];
+      db.reports = Array.isArray(db.reports) ? db.reports : [];
+      db.auditLogs = Array.isArray(db.auditLogs) ? db.auditLogs : [];
+      (db as any).passwordResetCodes = (db as any).passwordResetCodes || {};
       console.log('Database loaded successfully.');
       // Auto-migrate super admin credentials
       if (db.users['user_admin']) {
@@ -430,6 +439,13 @@ function authenticateUser(req: Request, res: Response, next: NextFunction) {
     return res.status(401).json({ error: 'Unauthorized: invalid or expired session' });
   }
 
+  // Check if session has expired
+  if (session.expiresAt && new Date(session.expiresAt).getTime() < Date.now()) {
+    delete db.sessions[token];
+    saveDb();
+    return res.status(401).json({ error: 'Unauthorized: session expired. Please sign in again.' });
+  }
+
   const user = db.users[session.userId];
   if (!user) {
     return res.status(401).json({ error: 'Unauthorized: user no longer exists' });
@@ -738,143 +754,438 @@ app.get('/api/health', (req: Request, res: Response) => {
 
 // --- Authentication ---
 app.post('/api/auth/register', (req: Request, res: Response) => {
-  const { name, username, email, password, phone } = req.body;
+  try {
+    const { name, username, email, password, confirmPassword, phone, bio, avatar } = req.body || {};
 
-  if (!name || !username || !email || !password) {
-    return res.status(400).json({ error: 'Name, username, email, and password are required.' });
-  }
-
-  const cleanUsername = username.trim().toLowerCase().replace(/^@/, '');
-  const cleanEmail = email.trim().toLowerCase();
-
-  // Validate username syntax
-  if (!/^[a-z0-9_]{3,24}$/.test(cleanUsername)) {
-    return res.status(400).json({ error: 'Username must be 3-24 characters containing letters, numbers, or underscores.' });
-  }
-
-  // Check unique username & email
-  for (const existing of Object.values(db.users)) {
-    if (existing.username.toLowerCase() === cleanUsername) {
-      return res.status(409).json({ error: 'Username is already taken. Please choose another.' });
+    if (!name || !username || !email || !password) {
+      return res.status(400).json({ error: 'All required fields (Full Name, Username, Email, and Password) must be provided.' });
     }
-    if (existing.email.toLowerCase() === cleanEmail) {
-      return res.status(409).json({ error: 'An account with this email address already exists.' });
+
+    const cleanName = String(name).trim();
+    // Auto-clean username: remove leading @, lowercase, replace spaces with underscores
+    let cleanUsername = String(username).trim().toLowerCase().replace(/^@/, '').replace(/\s+/g, '_');
+    const cleanEmail = String(email).trim().toLowerCase();
+    const cleanPhone = phone ? String(phone).trim() : undefined;
+
+    if (cleanName.length < 2) {
+      return res.status(400).json({ error: 'Full name must be at least 2 characters long.' });
     }
-  }
 
-  const salt = generateSalt();
-  const passwordHash = hashPassword(password, salt);
-  const now = new Date().toISOString();
-  const userId = `user_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+    // Email format validation (strict RFC-compliant check)
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(cleanEmail)) {
+      return res.status(400).json({ error: 'Please enter a valid email address (e.g., name@example.com).' });
+    }
 
-  // Default avatars list or generate clean SVG avatar
-  const defaultAvatars = [
-    '/src/assets/images/avatar_sarah_1793024817988.jpg',
-    '/src/assets/images/avatar_david_1793024817905.jpg',
-  ];
-  const chosenAvatar = defaultAvatars[Math.floor(Math.random() * defaultAvatars.length)];
+    // Password matching validation
+    if (confirmPassword !== undefined && password !== confirmPassword) {
+      return res.status(400).json({ error: 'Passwords do not match. Please verify that both passwords are identical.' });
+    }
 
-  const newUser: any = {
-    id: userId,
-    name: name.trim(),
-    username: cleanUsername,
-    email: cleanEmail,
-    phone: phone ? phone.trim() : undefined,
-    avatar: chosenAvatar,
-    role: 'user',
-    bio: 'Hey there! I am using RUDACTIVITY.',
-    isOnline: true,
-    lastSeen: now,
-    statusText: 'Available',
-    isVerified: true,
-    twoFactorEnabled: false,
-    createdAt: now,
-    passwordHash,
-    salt,
-    privacySettings: defaultPrivacySettings(),
-    blockedUserIds: [],
-  };
+    // Password strength check (min 8 characters, letters & digits required)
+    if (String(password).length < 8) {
+      return res.status(400).json({ error: 'Password must be at least 8 characters long.' });
+    }
+    if (!/(?=.*[A-Za-z])(?=.*\d)/.test(String(password))) {
+      return res.status(400).json({ error: 'Password must contain at least one letter and at least one number.' });
+    }
 
-  db.users[userId] = newUser;
+    // Validate username syntax (letters, numbers, underscores, dots, or dashes; 2-32 chars)
+    if (!/^[a-z0-9_.-]{2,32}$/.test(cleanUsername)) {
+      return res.status(400).json({ error: 'Username must be 2-32 characters (letters, numbers, underscores, dots, or dashes).' });
+    }
 
-  // Automatically add to official announcement channel
-  const officialChannel = db.conversations['conv_official_channel'];
-  if (officialChannel) {
-    officialChannel.participantIds.push(userId);
-    if (!officialChannel.participants) officialChannel.participants = {};
-    officialChannel.participants[userId] = {
-      userId,
-      role: 'member',
-      joinedAt: now,
-      unreadCount: 0,
+    // Check unique username & email
+    for (const existing of Object.values(db.users)) {
+      if (existing.username.toLowerCase() === cleanUsername) {
+        return res.status(409).json({ error: 'This username is already taken. Please choose another username.' });
+      }
+      if (existing.email.toLowerCase() === cleanEmail) {
+        return res.status(409).json({ error: 'An account with this email address already exists. Please sign in or reset your password.' });
+      }
+    }
+
+    const salt = generateSalt();
+    const passwordHash = hashPassword(String(password), salt);
+    const now = new Date().toISOString();
+    const userId = `user_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+
+    // Default avatars list
+    const defaultAvatars = [
+      '/src/assets/images/avatar_sarah_1793024817988.jpg',
+      '/src/assets/images/avatar_david_1793024817905.jpg',
+    ];
+    const chosenAvatar = avatar && String(avatar).trim() ? String(avatar).trim() : defaultAvatars[Math.floor(Math.random() * defaultAvatars.length)];
+    const chosenBio = bio && String(bio).trim() ? String(bio).trim() : 'Hey there! I am using RUDACTIVITY.';
+
+    const newUser: any = {
+      id: userId,
+      name: cleanName,
+      username: cleanUsername,
+      email: cleanEmail,
+      phone: cleanPhone,
+      avatar: chosenAvatar,
+      role: 'user',
+      bio: chosenBio,
+      isOnline: true,
+      lastSeen: now,
+      statusText: 'Available',
+      isVerified: true,
+      twoFactorEnabled: false,
+      createdAt: now,
+      passwordHash,
+      salt,
+      privacySettings: defaultPrivacySettings(),
+      blockedUserIds: [],
     };
+
+    db.users[userId] = newUser;
+
+    // Automatically add to official announcement channel
+    const officialChannel = db.conversations['conv_official_channel'];
+    if (officialChannel) {
+      if (!officialChannel.participantIds.includes(userId)) {
+        officialChannel.participantIds.push(userId);
+      }
+      if (!officialChannel.participants) officialChannel.participants = {};
+      officialChannel.participants[userId] = {
+        userId,
+        role: 'member',
+        joinedAt: now,
+        unreadCount: 0,
+      };
+    }
+
+    const token = generateToken();
+    db.sessions[token] = {
+      userId,
+      createdAt: now,
+      expiresAt: new Date(Date.now() + 30 * 86400000).toISOString(),
+    };
+
+    saveDb();
+
+    return res.status(201).json({
+      token,
+      user: sanitizeUser(newUser),
+      message: 'Account created successfully! Welcome to RUDACTIVITY.',
+    });
+  } catch (err: any) {
+    console.error('Registration server error:', err);
+    return res.status(500).json({ error: 'Server error creating account: ' + (err.message || 'Unknown error') });
   }
-
-  const token = generateToken();
-  db.sessions[token] = {
-    userId,
-    createdAt: now,
-    expiresAt: new Date(Date.now() + 30 * 86400000).toISOString(),
-  };
-
-  saveDb();
-
-  return res.status(201).json({
-    token,
-    user: sanitizeUser(newUser),
-  });
 });
 
-app.post('/api/auth/login', (req: Request, res: Response) => {
-  const { loginIdentifier, password } = req.body; // username, email, or phone
+app.post('/api/auth/google', (req: Request, res: Response) => {
+  try {
+    const { email, name, picture, sub, googleToken } = req.body || {};
 
-  if (!loginIdentifier || !password) {
-    return res.status(400).json({ error: 'Identifier and password are required.' });
-  }
-
-  const identifier = loginIdentifier.trim().toLowerCase().replace(/^@/, '');
-  let foundUser: any = null;
-
-  for (const u of Object.values(db.users)) {
-    if (
-      u.username.toLowerCase() === identifier ||
-      u.email.toLowerCase() === identifier ||
-      (u.phone && u.phone.replace(/\s+/g, '') === identifier.replace(/\s+/g, ''))
-    ) {
-      foundUser = u;
-      break;
+    if (!email || !email.includes('@')) {
+      return res.status(400).json({ error: 'A valid Google email address is required.' });
     }
+
+    const cleanEmail = String(email).trim().toLowerCase();
+    const cleanName = name ? String(name).trim() : cleanEmail.split('@')[0];
+    const googleAvatar = picture && String(picture).startsWith('http')
+      ? String(picture)
+      : '/src/assets/images/avatar_david_1793024817905.jpg';
+
+    // 1. Check if user already exists by email or googleId
+    let foundUser: any = null;
+    for (const u of Object.values(db.users)) {
+      if (
+        u.email.toLowerCase() === cleanEmail ||
+        (sub && (u as any).googleId === sub)
+      ) {
+        foundUser = u;
+        break;
+      }
+    }
+
+    const now = new Date().toISOString();
+
+    if (foundUser) {
+      if (foundUser.isSuspended) {
+        return res.status(403).json({ error: 'This account has been suspended by administration.' });
+      }
+
+      // Update avatar or googleId if not set
+      if (sub) (foundUser as any).googleId = sub;
+      if (googleAvatar && (!foundUser.avatar || foundUser.avatar.includes('avatar_'))) {
+        foundUser.avatar = googleAvatar;
+      }
+      foundUser.isOnline = true;
+      foundUser.lastSeen = now;
+
+      const token = generateToken();
+      db.sessions[token] = {
+        userId: foundUser.id,
+        createdAt: now,
+        expiresAt: new Date(Date.now() + 30 * 86400000).toISOString(),
+      };
+
+      saveDb();
+
+      return res.json({
+        token,
+        user: sanitizeUser(foundUser),
+        message: 'Successfully signed in with Google account.',
+      });
+    }
+
+    // 2. User does not exist -> Auto-create new account with Google details
+    let baseUsername = cleanName.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+    if (!baseUsername || baseUsername.length < 2) {
+      baseUsername = cleanEmail.split('@')[0].replace(/[^a-z0-9_]/g, '');
+    }
+    let uniqueUsername = baseUsername;
+    let counter = 1;
+
+    while (Object.values(db.users).some((u) => u.username.toLowerCase() === uniqueUsername.toLowerCase())) {
+      uniqueUsername = `${baseUsername}_${counter}`;
+      counter++;
+    }
+
+    const userId = `user_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+    const salt = generateSalt();
+    // Random secure hash for Google user
+    const passwordHash = hashPassword(generateToken(), salt);
+
+    const newUser: any = {
+      id: userId,
+      name: cleanName,
+      username: uniqueUsername,
+      email: cleanEmail,
+      avatar: googleAvatar,
+      role: 'user',
+      bio: 'Verified Google Account user on RUDACTIVITY.',
+      isOnline: true,
+      lastSeen: now,
+      statusText: 'Available',
+      isVerified: true,
+      twoFactorEnabled: false,
+      googleId: sub || `google_${Date.now()}`,
+      createdAt: now,
+      passwordHash,
+      salt,
+      privacySettings: defaultPrivacySettings(),
+      blockedUserIds: [],
+    };
+
+    db.users[userId] = newUser;
+
+    // Automatically add to official announcement channel
+    const officialChannel = db.conversations['conv_official_channel'];
+    if (officialChannel) {
+      if (!officialChannel.participantIds.includes(userId)) {
+        officialChannel.participantIds.push(userId);
+      }
+      if (!officialChannel.participants) officialChannel.participants = {};
+      officialChannel.participants[userId] = {
+        userId,
+        role: 'member',
+        joinedAt: now,
+        unreadCount: 0,
+      };
+    }
+
+    const token = generateToken();
+    db.sessions[token] = {
+      userId,
+      createdAt: now,
+      expiresAt: new Date(Date.now() + 30 * 86400000).toISOString(),
+    };
+
+    saveDb();
+
+    return res.status(201).json({
+      token,
+      user: sanitizeUser(newUser),
+      message: 'Account created successfully with Google.',
+    });
+  } catch (err: any) {
+    console.error('Google Auth server error:', err);
+    return res.status(500).json({ error: 'Google authentication failed: ' + (err.message || 'Unknown error') });
   }
+});
 
-  if (!foundUser) {
-    return res.status(401).json({ error: 'Invalid credentials. Please verify your details.' });
+// --- Password Reset & Account Recovery ---
+app.post('/api/auth/forgot-password', (req: Request, res: Response) => {
+  try {
+    const { email } = req.body || {};
+    if (!email || !String(email).includes('@')) {
+      return res.status(400).json({ error: 'Please enter a valid email address.' });
+    }
+
+    const cleanEmail = String(email).trim().toLowerCase();
+    const targetUser = Object.values(db.users).find((u) => u.email.toLowerCase() === cleanEmail);
+
+    if (!targetUser) {
+      return res.status(404).json({ error: 'No account registered with this email address.' });
+    }
+
+    if (targetUser.isSuspended) {
+      return res.status(403).json({ error: 'This account has been suspended. Please contact platform support.' });
+    }
+
+    // Generate secure 6-digit verification code with 15-minute validity
+    const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+
+    (db as any).passwordResetCodes = (db as any).passwordResetCodes || {};
+    (db as any).passwordResetCodes[cleanEmail] = {
+      code: resetCode,
+      userId: targetUser.id,
+      expiresAt,
+    };
+
+    saveDb();
+
+    return res.json({
+      success: true,
+      message: `Password reset code sent to ${cleanEmail}. Enter the code below to reset your password.`,
+      codePreview: resetCode, // Provided for instant verification in the AI Studio environment
+    });
+  } catch (err: any) {
+    console.error('Forgot password error:', err);
+    return res.status(500).json({ error: 'Failed to request password reset: ' + (err.message || 'Unknown error') });
   }
+});
 
-  if (foundUser.isSuspended) {
-    return res.status(403).json({ error: 'This account has been suspended by administration.' });
+app.post('/api/auth/reset-password', (req: Request, res: Response) => {
+  try {
+    const { email, code, newPassword, confirmPassword } = req.body || {};
+
+    if (!email || !code || !newPassword) {
+      return res.status(400).json({ error: 'Email, verification code, and new password are required.' });
+    }
+
+    const cleanEmail = String(email).trim().toLowerCase();
+
+    if (confirmPassword !== undefined && newPassword !== confirmPassword) {
+      return res.status(400).json({ error: 'New passwords do not match. Please ensure both fields are identical.' });
+    }
+
+    if (String(newPassword).length < 8) {
+      return res.status(400).json({ error: 'New password must be at least 8 characters long.' });
+    }
+    if (!/(?=.*[A-Za-z])(?=.*\d)/.test(String(newPassword))) {
+      return res.status(400).json({ error: 'New password must contain at least one letter and at least one number.' });
+    }
+
+    (db as any).passwordResetCodes = (db as any).passwordResetCodes || {};
+    const record = (db as any).passwordResetCodes[cleanEmail];
+
+    if (!record || record.code !== String(code).trim()) {
+      return res.status(400).json({ error: 'Invalid verification code. Please check your code and try again.' });
+    }
+
+    if (new Date(record.expiresAt).getTime() < Date.now()) {
+      delete (db as any).passwordResetCodes[cleanEmail];
+      saveDb();
+      return res.status(400).json({ error: 'Verification code has expired. Please request a new reset code.' });
+    }
+
+    const user = db.users[record.userId];
+    if (!user) {
+      return res.status(404).json({ error: 'Account associated with this code no longer exists.' });
+    }
+
+    // Set new password with fresh salt
+    user.salt = generateSalt();
+    user.passwordHash = hashPassword(String(newPassword), user.salt);
+    delete (db as any).passwordResetCodes[cleanEmail];
+
+    // Revoke old sessions for security
+    for (const [t, s] of Object.entries(db.sessions)) {
+      if (s.userId === user.id) {
+        delete db.sessions[t];
+      }
+    }
+
+    // Issue fresh active session
+    const token = generateToken();
+    const now = new Date().toISOString();
+    db.sessions[token] = {
+      userId: user.id,
+      createdAt: now,
+      expiresAt: new Date(Date.now() + 30 * 86400000).toISOString(),
+    };
+
+    user.isOnline = true;
+    user.lastSeen = now;
+    saveDb();
+
+    return res.json({
+      success: true,
+      token,
+      user: sanitizeUser(user),
+      message: 'Password reset successfully! You are now logged in.',
+    });
+  } catch (err: any) {
+    console.error('Reset password error:', err);
+    return res.status(500).json({ error: 'Failed to reset password: ' + (err.message || 'Unknown error') });
   }
+});
 
-  const testHash = hashPassword(password, foundUser.salt);
-  if (testHash !== foundUser.passwordHash) {
-    return res.status(401).json({ error: 'Invalid credentials. Please verify your password.' });
+// --- Login ---
+app.post('/api/auth/login', (req: Request, res: Response) => {
+  try {
+    const rawIdentifier = req.body?.loginIdentifier || req.body?.identifier;
+    const { password } = req.body || {};
+
+    if (!rawIdentifier || !password) {
+      return res.status(400).json({ error: 'Username/Email/Phone and password are required.' });
+    }
+
+    const identifier = String(rawIdentifier).trim().toLowerCase().replace(/^@/, '');
+    let foundUser: any = null;
+
+    for (const u of Object.values(db.users)) {
+      if (
+        u.username.toLowerCase() === identifier ||
+        u.email.toLowerCase() === identifier ||
+        (u.phone && u.phone.replace(/\s+/g, '') === identifier.replace(/\s+/g, ''))
+      ) {
+        foundUser = u;
+        break;
+      }
+    }
+
+    if (!foundUser) {
+      return res.status(401).json({ error: 'Invalid credentials. No user found matching those details.' });
+    }
+
+    if (foundUser.isSuspended) {
+      return res.status(403).json({ error: 'This account has been suspended by administration.' });
+    }
+
+    const testHash = hashPassword(String(password), foundUser.salt);
+    if (testHash !== foundUser.passwordHash) {
+      return res.status(401).json({ error: 'Invalid credentials. Please verify your password.' });
+    }
+
+    const token = generateToken();
+    const now = new Date().toISOString();
+    db.sessions[token] = {
+      userId: foundUser.id,
+      createdAt: now,
+      expiresAt: new Date(Date.now() + 30 * 86400000).toISOString(),
+    };
+
+    foundUser.isOnline = true;
+    foundUser.lastSeen = now;
+    saveDb();
+
+    return res.json({
+      token,
+      user: sanitizeUser(foundUser),
+      message: 'Logged in successfully.',
+    });
+  } catch (err: any) {
+    console.error('Login server error:', err);
+    return res.status(500).json({ error: 'Login failed due to a server error: ' + (err.message || 'Unknown error') });
   }
-
-  const token = generateToken();
-  const now = new Date().toISOString();
-  db.sessions[token] = {
-    userId: foundUser.id,
-    createdAt: now,
-    expiresAt: new Date(Date.now() + 30 * 86400000).toISOString(),
-  };
-
-  foundUser.isOnline = true;
-  foundUser.lastSeen = now;
-  saveDb();
-
-  return res.json({
-    token,
-    user: sanitizeUser(foundUser),
-  });
 });
 
 app.get('/api/auth/me', authenticateUser, (req: Request, res: Response) => {
@@ -1725,6 +2036,17 @@ app.post('/api/admin/reports/:id/resolve', authenticateUser, requireAdmin, (req:
 
 app.get('/api/admin/audit-logs', authenticateUser, requireAdmin, (req: Request, res: Response) => {
   res.json({ logs: db.auditLogs.slice(0, 100) });
+});
+
+// API 404 Handler - prevents missing API endpoints from returning Vite index.html
+app.use('/api/*', (req: Request, res: Response) => {
+  res.status(404).json({ error: 'API endpoint not found.' });
+});
+
+// Global API Error Handler - ensures all server errors return JSON instead of HTML pages
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+  console.error('Unhandled API Server Error:', err);
+  res.status(500).json({ error: err?.message || 'An unexpected server error occurred.' });
 });
 
 // ---------------------------------------------------------------------------

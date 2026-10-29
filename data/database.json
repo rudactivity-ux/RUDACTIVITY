@@ -15,8 +15,8 @@
       "isVerified": true,
       "twoFactorEnabled": false,
       "createdAt": "2026-10-26T14:38:20.640Z",
-      "passwordHash": "3872d0ca8978ea23d2643b38c629e0a81dbc62d62a0c8f0fc252b683ef6a227f8e23b9e75cf2392633cc965413e9e6c83527d026cc261d83425f9a1459b28cf8",
-      "salt": "e92876ae23235dc282c06d97dc2d74de",
+      "passwordHash": "dc85b27f8557e83b6cec471669491d2bdf40981b8ee7d28c6547f026d8996aa4caade2800bcdc357371af544f7cedfebb62f8fcea88c457bfce7fd6ecfd559dd",
+      "salt": "ae9c6400a3fb9452a7496441ca37f144",
       "privacySettings": {
         "lastSeenVisibility": "everyone",
         "profilePhotoVisibility": "everyone",
@@ -155,6 +155,162 @@
         "whoCanAddToGroups": "everyone"
       },
       "blockedUserIds": []
+    },
+    "user_1793207661564_eeb8": {
+      "id": "user_1793207661564_eeb8",
+      "name": "Jean Claude Munyaneza",
+      "username": "munyaneza_jc",
+      "email": "jean.claude@test.com",
+      "phone": "+250 788 123 456",
+      "avatar": "/src/assets/images/avatar_david_1793024817905.jpg",
+      "role": "user",
+      "bio": "Hey there! I am using RUDACTIVITY.",
+      "isOnline": true,
+      "lastSeen": "2026-10-28T17:14:21.563Z",
+      "statusText": "Available",
+      "isVerified": true,
+      "twoFactorEnabled": false,
+      "createdAt": "2026-10-28T17:14:21.563Z",
+      "passwordHash": "9035b1dd1d01357319ebf03a3a3edc9da3ad3cedc70a95edbfe1911857c0b26e342c0ff1347a8d77af25829a10fe3dfcd58d7c8015b04ccaeaf16332b955459b",
+      "salt": "7eb9665383ce45a63e255b07ff19a2b7",
+      "privacySettings": {
+        "lastSeenVisibility": "everyone",
+        "profilePhotoVisibility": "everyone",
+        "whoCanCallMe": "everyone",
+        "readReceipts": true,
+        "whoCanAddToGroups": "everyone"
+      },
+      "blockedUserIds": []
+    },
+    "user_1793210569692_sbz6": {
+      "id": "user_1793210569692_sbz6",
+      "name": "Eric Mugisha",
+      "username": "mugisha_eric",
+      "email": "eric.mugisha@test.com",
+      "phone": "+250 788 999 888",
+      "avatar": "/src/assets/images/avatar_david_1793024817905.jpg",
+      "role": "user",
+      "bio": "Hey there! I am using RUDACTIVITY.",
+      "isOnline": true,
+      "lastSeen": "2026-10-28T18:02:49.692Z",
+      "statusText": "Available",
+      "isVerified": true,
+      "twoFactorEnabled": false,
+      "createdAt": "2026-10-28T18:02:49.692Z",
+      "passwordHash": "56894ca72e30e156105f3d3065c1bc8b76209b306a2a13c3172dd12629022143f6e81cd06d136db40dc3bf33ae4acc33a56aaeb80d1e43d3457d76490a6b870f",
+      "salt": "da1fe33f036ccb8e8771cefc21a28fcf",
+      "privacySettings": {
+        "lastSeenVisibility": "everyone",
+        "profilePhotoVisibility": "everyone",
+        "whoCanCallMe": "everyone",
+        "readReceipts": true,
+        "whoCanAddToGroups": "everyone"
+      },
+      "blockedUserIds": []
+    },
+    "user_1793210577319_vlxd": {
+      "id": "user_1793210577319_vlxd",
+      "name": "Eric Mugisha",
+      "username": "mugisha_eric2",
+      "email": "eric.mugisha2@test.com",
+      "phone": "+250 788 999 888",
+      "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
+      "role": "user",
+      "bio": "Software Engineer in Kigali",
+      "isOnline": true,
+      "lastSeen": "2026-10-28T18:02:57.318Z",
+      "statusText": "Available",
+      "isVerified": true,
+      "twoFactorEnabled": false,
+      "createdAt": "2026-10-28T18:02:57.318Z",
+      "passwordHash": "b90bd41c468ecb45f6f597f48a0e3cd8a8d62ac97e577ee3a703850ea0a11d9e3d2ffc33b48b6a8078cdf0ddcb1c74d8043c477c6fe1569c17c644a6d1a3c455",
+      "salt": "ba8c5bed75773d9e65fad67af478b2be",
+      "privacySettings": {
+        "lastSeenVisibility": "everyone",
+        "profilePhotoVisibility": "everyone",
+        "whoCanCallMe": "everyone",
+        "readReceipts": true,
+        "whoCanAddToGroups": "everyone"
+      },
+      "blockedUserIds": []
+    },
+    "user_1793211147340_f3ay": {
+      "id": "user_1793211147340_f3ay",
+      "name": "RUDACTIVITY Google User",
+      "username": "rudactivity_google_user",
+      "email": "rudactivity@gmail.com",
+      "avatar": "https://lh3.googleusercontent.com/a/default-user=s96-c",
+      "role": "user",
+      "bio": "Verified Google Account user on RUDACTIVITY.",
+      "isOnline": false,
+      "lastSeen": "2026-10-29T09:47:41.475Z",
+      "statusText": "Available",
+      "isVerified": true,
+      "twoFactorEnabled": false,
+      "googleId": "google_1793267160083",
+      "createdAt": "2026-10-28T18:12:27.340Z",
+      "passwordHash": "16e2b63cc382e588bb01e9bb5f124707950e0fb5956a2e1dbfb8bb1cbe38d8753f826faffdc773b5b6aeb8be29d2cb4b063465a4d30c3703d8753e4dc175783f",
+      "salt": "31f28ecea3d6e85c8d4e64a94f4e42e0",
+      "privacySettings": {
+        "lastSeenVisibility": "everyone",
+        "profilePhotoVisibility": "everyone",
+        "whoCanCallMe": "everyone",
+        "readReceipts": true,
+        "whoCanAddToGroups": "everyone"
+      },
+      "blockedUserIds": []
+    },
+    "user_1793265707263_u3q1": {
+      "id": "user_1793265707263_u3q1",
+      "name": "Aline Uwase",
+      "username": "aline_uwase",
+      "email": "aline.uwase@example.com",
+      "phone": "+250 788 111 222",
+      "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+      "role": "user",
+      "bio": "Product Designer in Kigali",
+      "isOnline": true,
+      "lastSeen": "2026-10-29T09:22:29.697Z",
+      "statusText": "Available",
+      "isVerified": true,
+      "twoFactorEnabled": false,
+      "createdAt": "2026-10-29T09:21:47.263Z",
+      "passwordHash": "eaecc946622941d1d32b66ec6567ce9e447570ba78ddc578ed9c409cd3e3e63ac5ca40f1850da717f4cf3714bfe6764f3fd078261d4c4cb3fa001e1036989c14",
+      "salt": "68cb814b68b28ef1a1723f54b870306e",
+      "privacySettings": {
+        "lastSeenVisibility": "everyone",
+        "profilePhotoVisibility": "everyone",
+        "whoCanCallMe": "everyone",
+        "readReceipts": true,
+        "whoCanAddToGroups": "everyone"
+      },
+      "blockedUserIds": []
+    },
+    "user_1793267255232_lsau": {
+      "id": "user_1793267255232_lsau",
+      "name": "Jean Bosco",
+      "username": "jean_bosco_reg",
+      "email": "test.email.reg@example.com",
+      "phone": "+250 788 123 456",
+      "avatar": "/src/assets/images/avatar_sarah_1793024817988.jpg",
+      "role": "user",
+      "bio": "Testing email registration",
+      "isOnline": true,
+      "lastSeen": "2026-10-29T09:48:10.987Z",
+      "statusText": "Available",
+      "isVerified": true,
+      "twoFactorEnabled": false,
+      "createdAt": "2026-10-29T09:47:35.232Z",
+      "passwordHash": "6e33265ec7c11916c07646ffe33223bcfb9572e17e811ccde75b113f1528c3a7c839700979914587c6025d58780ddc2eb41d5f5497183203652aa7f8668b95d1",
+      "salt": "baf76e5415a8198853400bbbf397219a",
+      "privacySettings": {
+        "lastSeenVisibility": "everyone",
+        "profilePhotoVisibility": "everyone",
+        "whoCanCallMe": "everyone",
+        "readReceipts": true,
+        "whoCanAddToGroups": "everyone"
+      },
+      "blockedUserIds": []
     }
   },
   "sessions": {
@@ -192,6 +348,51 @@
       "userId": "user_admin",
       "createdAt": "2026-10-28T15:56:12.666Z",
       "expiresAt": "2026-11-27T15:56:12.666Z"
+    },
+    "c5e82eb71161c173351a2d448a38a70ca875734411082d1d71425b2a81f44439": {
+      "userId": "user_1793207661564_eeb8",
+      "createdAt": "2026-10-28T17:14:21.563Z",
+      "expiresAt": "2026-11-27T17:14:21.565Z"
+    },
+    "50dfb8e6d248c8a3720e2714147e5333a6a56160927aae71762850d12b839b16": {
+      "userId": "user_1793210569692_sbz6",
+      "createdAt": "2026-10-28T18:02:49.692Z",
+      "expiresAt": "2026-11-27T18:02:49.692Z"
+    },
+    "bf7181d370aef8bfeaa8c2d15ea5281ec5a11ed6e25507cdfe36ac94cf24b3e6": {
+      "userId": "user_1793210577319_vlxd",
+      "createdAt": "2026-10-28T18:02:57.318Z",
+      "expiresAt": "2026-11-27T18:02:57.319Z"
+    },
+    "4c533cd463734db052f177ebb3f86e547d9095f6699cd58dfa91c8a45c3b1ed5": {
+      "userId": "user_1793211147340_f3ay",
+      "createdAt": "2026-10-28T18:12:27.340Z",
+      "expiresAt": "2026-11-27T18:12:27.346Z"
+    },
+    "c8f8c9b93707f5fdd793eeeb00d86ac00a26f094ac20e77d396ff9c305e3b0f3": {
+      "userId": "user_1793211147340_f3ay",
+      "createdAt": "2026-10-28T18:12:30.504Z",
+      "expiresAt": "2026-11-27T18:12:30.504Z"
+    },
+    "f71db6b8308fb53ffe78f90a82459f5f1b02177bf38d65c30b092bfb82113353": {
+      "userId": "user_1793265707263_u3q1",
+      "createdAt": "2026-10-29T09:22:25.874Z",
+      "expiresAt": "2026-11-28T09:22:25.874Z"
+    },
+    "4c949f6bc9889ab91e6c30c3720a6a9abdb0b975cd4cc495897ed52b8ed6fafe": {
+      "userId": "user_1793265707263_u3q1",
+      "createdAt": "2026-10-29T09:22:29.697Z",
+      "expiresAt": "2026-11-28T09:22:29.697Z"
+    },
+    "8574d939edfb7f50b8c6aac5f7fa11a8b48c65e330f93e67db5b51fec37f0ac7": {
+      "userId": "user_1793267255232_lsau",
+      "createdAt": "2026-10-29T09:47:35.232Z",
+      "expiresAt": "2026-11-28T09:47:35.232Z"
+    },
+    "90fffee9241a76bb961953887b932e14618e6673069b07c88f8aab05820280ea": {
+      "userId": "user_1793267255232_lsau",
+      "createdAt": "2026-10-29T09:48:10.987Z",
+      "expiresAt": "2026-11-28T09:48:10.988Z"
     }
   },
   "conversations": {
@@ -210,7 +411,13 @@
         "user_david",
         "user_amara",
         "user_1793025511287_ihgx",
-        "user_1793202146032_7c8u"
+        "user_1793202146032_7c8u",
+        "user_1793207661564_eeb8",
+        "user_1793210569692_sbz6",
+        "user_1793210577319_vlxd",
+        "user_1793211147340_f3ay",
+        "user_1793265707263_u3q1",
+        "user_1793267255232_lsau"
       ],
       "adminIds": [
         "user_admin",
@@ -251,6 +458,42 @@
           "userId": "user_1793202146032_7c8u",
           "role": "member",
           "joinedAt": "2026-10-28T15:42:26.032Z",
+          "unreadCount": 0
+        },
+        "user_1793207661564_eeb8": {
+          "userId": "user_1793207661564_eeb8",
+          "role": "member",
+          "joinedAt": "2026-10-28T17:14:21.563Z",
+          "unreadCount": 0
+        },
+        "user_1793210569692_sbz6": {
+          "userId": "user_1793210569692_sbz6",
+          "role": "member",
+          "joinedAt": "2026-10-28T18:02:49.692Z",
+          "unreadCount": 0
+        },
+        "user_1793210577319_vlxd": {
+          "userId": "user_1793210577319_vlxd",
+          "role": "member",
+          "joinedAt": "2026-10-28T18:02:57.318Z",
+          "unreadCount": 0
+        },
+        "user_1793211147340_f3ay": {
+          "userId": "user_1793211147340_f3ay",
+          "role": "member",
+          "joinedAt": "2026-10-28T18:12:27.340Z",
+          "unreadCount": 0
+        },
+        "user_1793265707263_u3q1": {
+          "userId": "user_1793265707263_u3q1",
+          "role": "member",
+          "joinedAt": "2026-10-29T09:21:47.263Z",
+          "unreadCount": 0
+        },
+        "user_1793267255232_lsau": {
+          "userId": "user_1793267255232_lsau",
+          "role": "member",
+          "joinedAt": "2026-10-29T09:47:35.232Z",
           "unreadCount": 0
         }
       },
@@ -382,6 +625,41 @@
       },
       "createdAt": "2026-10-28T15:55:04.424Z",
       "updatedAt": "2026-10-28T15:55:04.424Z"
+    },
+    "conv_dm_1793267195760_vob5": {
+      "id": "conv_dm_1793267195760_vob5",
+      "type": "direct",
+      "title": "URIRUDAKEMWA",
+      "creatorId": "user_1793211147340_f3ay",
+      "participantIds": [
+        "user_1793211147340_f3ay",
+        "user_admin"
+      ],
+      "adminIds": [],
+      "participants": {
+        "user_1793211147340_f3ay": {
+          "userId": "user_1793211147340_f3ay",
+          "role": "member",
+          "joinedAt": "2026-10-29T09:46:35.760Z",
+          "unreadCount": 0
+        },
+        "user_admin": {
+          "userId": "user_admin",
+          "role": "member",
+          "joinedAt": "2026-10-29T09:46:35.760Z",
+          "unreadCount": 2
+        }
+      },
+      "createdAt": "2026-10-29T09:46:35.760Z",
+      "updatedAt": "2026-10-29T09:47:17.158Z",
+      "lastMessage": {
+        "id": "msg_1793267237158_xwkle",
+        "senderId": "user_1793211147340_f3ay",
+        "senderName": "RUDACTIVITY Google User",
+        "content": "📎 Attachment",
+        "type": "image",
+        "createdAt": "2026-10-29T09:47:17.158Z"
+      }
     }
   },
   "messages": {
@@ -475,6 +753,21 @@
       "isPinned": false,
       "status": "sent",
       "createdAt": "2026-10-28T15:54:29.996Z"
+    },
+    "msg_1793267202775_a6hds": {
+      "id": "msg_1793267202775_a6hds",
+      "conversationId": "conv_dm_1793267195760_vob5",
+      "senderId": "user_1793211147340_f3ay",
+      "senderName": "RUDACTIVITY Google User",
+      "senderAvatar": "https://lh3.googleusercontent.com/a/default-user=s96-c",
+      "content": "HELLO",
+      "type": "text",
+      "attachments": [],
+      "reactions": {},
+      "isEdited": false,
+      "isPinned": false,
+      "status": "sent",
+      "createdAt": "2026-10-29T09:46:42.775Z"
     }
   },
   "conversationMessages": {
@@ -489,7 +782,10 @@
     "conv_dm_sarah_david": [
       "msg_1793202869996_gyvvc"
     ],
-    "conv_dm_1793202904424_dtx6": []
+    "conv_dm_1793202904424_dtx6": [],
+    "conv_dm_1793267195760_vob5": [
+      "msg_1793267202775_a6hds"
+    ]
   },
   "callRecords": [],
   "reports": [],
@@ -505,5 +801,6 @@
       },
       "timestamp": "2026-10-26T14:38:20.640Z"
     }
-  ]
+  ],
+  "passwordResetCodes": {}
 }
