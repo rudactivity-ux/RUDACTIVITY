@@ -15,8 +15,8 @@
       "isVerified": true,
       "twoFactorEnabled": false,
       "createdAt": "2026-10-26T14:38:20.640Z",
-      "passwordHash": "dc85b27f8557e83b6cec471669491d2bdf40981b8ee7d28c6547f026d8996aa4caade2800bcdc357371af544f7cedfebb62f8fcea88c457bfce7fd6ecfd559dd",
-      "salt": "ae9c6400a3fb9452a7496441ca37f144",
+      "passwordHash": "b4bff85d21b29603326a916da3165fe7d23790c08d75aae8dbd65ffb5e31da6a702865f3d1eab21d931e8ccfba73fcd0d34da3e255f0d97e2ffd2d0957b372f9",
+      "salt": "cd029c300a38a7b71d5727444dd096b5",
       "privacySettings": {
         "lastSeenVisibility": "everyone",
         "profilePhotoVisibility": "everyone",
@@ -236,21 +236,21 @@
     },
     "user_1793211147340_f3ay": {
       "id": "user_1793211147340_f3ay",
-      "name": "RUDACTIVITY Google User",
-      "username": "rudactivity_google_user",
+      "name": "RUDA CTIVITY.",
+      "username": "rudactivity",
       "email": "rudactivity@gmail.com",
-      "avatar": "https://lh3.googleusercontent.com/a/default-user=s96-c",
+      "avatar": "/src/assets/images/avatar_sarah_1793024817988.jpg",
       "role": "user",
-      "bio": "Verified Google Account user on RUDACTIVITY.",
-      "isOnline": false,
-      "lastSeen": "2026-10-29T09:47:41.475Z",
+      "bio": "Hey there! I am using RUDACTIVITY.",
+      "isOnline": true,
+      "lastSeen": "2026-10-29T10:21:13.182Z",
       "statusText": "Available",
       "isVerified": true,
       "twoFactorEnabled": false,
       "googleId": "google_1793267160083",
       "createdAt": "2026-10-28T18:12:27.340Z",
-      "passwordHash": "16e2b63cc382e588bb01e9bb5f124707950e0fb5956a2e1dbfb8bb1cbe38d8753f826faffdc773b5b6aeb8be29d2cb4b063465a4d30c3703d8753e4dc175783f",
-      "salt": "31f28ecea3d6e85c8d4e64a94f4e42e0",
+      "passwordHash": "518ea90f6c4647b243fa5d74445200d632a84e14bb90295c8e2c2d2674ce737cc07335cd1e447b397c7ff6a9a1b516d19a34e88bfe97b978e00d844581a9d154",
+      "salt": "99ecc1b01576a955d379bbf6f2d057bf",
       "privacySettings": {
         "lastSeenVisibility": "everyone",
         "profilePhotoVisibility": "everyone",
@@ -258,7 +258,8 @@
         "readReceipts": true,
         "whoCanAddToGroups": "everyone"
       },
-      "blockedUserIds": []
+      "blockedUserIds": [],
+      "phone": "+250 788 123 456"
     },
     "user_1793265707263_u3q1": {
       "id": "user_1793265707263_u3q1",
@@ -393,6 +394,21 @@
       "userId": "user_1793267255232_lsau",
       "createdAt": "2026-10-29T09:48:10.987Z",
       "expiresAt": "2026-11-28T09:48:10.988Z"
+    },
+    "c9ffc9d8ff187749d9d0225fd4ac7abe935bfaa3255bd79c5d5b0b0f3c92bd3a": {
+      "userId": "user_1793211147340_f3ay",
+      "createdAt": "2026-10-29T10:21:05.237Z",
+      "expiresAt": "2026-11-28T10:21:05.237Z"
+    },
+    "df46489786b1a57d740ecd8d399a32662f4798a94ac14cb1a60f0194b0849155": {
+      "userId": "user_1793211147340_f3ay",
+      "createdAt": "2026-10-29T10:21:09.927Z",
+      "expiresAt": "2026-11-28T10:21:09.927Z"
+    },
+    "f01587e7222a6eed9f2ea1c25afca139f4c43bdac965cd69f8e9397b25503fd6": {
+      "userId": "user_1793211147340_f3ay",
+      "createdAt": "2026-10-29T10:21:13.182Z",
+      "expiresAt": "2026-11-28T10:21:13.182Z"
     }
   },
   "conversations": {
@@ -481,7 +497,7 @@
         "user_1793211147340_f3ay": {
           "userId": "user_1793211147340_f3ay",
           "role": "member",
-          "joinedAt": "2026-10-28T18:12:27.340Z",
+          "joinedAt": "2026-10-29T10:21:05.237Z",
           "unreadCount": 0
         },
         "user_1793265707263_u3q1": {

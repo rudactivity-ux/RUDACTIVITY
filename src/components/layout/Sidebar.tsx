@@ -22,6 +22,8 @@ import {
 } from 'lucide-react';
 import { Conversation } from '../../types/index.ts';
 import { PWAInstallButton } from '../pwa/PWAInstallButton.tsx';
+import { useLanguage } from '../../context/LanguageContext.tsx';
+import { LanguageToggle } from '../common/LanguageToggle.tsx';
 
 interface SidebarProps {
   onOpenCreate: (tab?: 'direct' | 'group' | 'channel') => void;
@@ -48,6 +50,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   } = useChat();
 
   const { user, logout, switchAccount } = useAuth();
+  const { language, t } = useLanguage();
   const [contextMenuId, setContextMenuId] = useState<string | null>(null);
   const [showUserMenu, setShowUserMenu] = useState(false);
 
@@ -86,12 +89,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
   return (
     <aside className="w-full md:w-80 lg:w-96 h-full flex flex-col bg-slate-900 border-r border-slate-800/80 select-none shrink-0 relative">
       {/* Brand Header */}
-      <div className="p-3.5 border-b border-slate-800/80 flex items-center justify-between bg-slate-950/40">
-        <div className="flex items-center gap-3">
+      <div className="p-3 border-b border-slate-800/80 flex items-center justify-between bg-slate-950/40">
+        <div className="flex items-center gap-2.5">
           <div className="relative cursor-pointer" onClick={() => setShowUserMenu(!showUserMenu)}>
             <img
               src="/src/assets/images/rudactivity_logo_1793024816643.jpg"
-              alt="RUDACTIVITY"
+              alt="E-RUDACTIVITY"
               className="w-9 h-9 rounded-xl object-cover ring-1 ring-indigo-500/30 shadow-md"
             />
             {user?.isOnline && (
@@ -100,44 +103,45 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
           <div className="cursor-pointer" onClick={() => setShowUserMenu(!showUserMenu)}>
             <div className="flex items-center gap-1.5">
-              <span className="font-bold text-sm tracking-tight text-white">RUDACTIVITY</span>
+              <span className="font-bold text-sm tracking-tight text-white">E-RUDACTIVITY</span>
               {user?.isVerified && (
                 <span className="text-[10px] text-indigo-400 font-bold">✓</span>
               )}
             </div>
-            <p className="text-[11px] text-slate-400 truncate max-w-[130px]">
+            <p className="text-[11px] text-slate-400 truncate max-w-[120px]">
               @{user?.username}
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-1">
+          <LanguageToggle variant="compact" />
           <PWAInstallButton variant="compact" />
 
           {isAdmin && (
             <button
               onClick={onOpenAdmin}
-              className="p-2 rounded-xl text-slate-400 hover:text-indigo-400 hover:bg-slate-800 transition-colors"
-              title="Platform Administration"
+              className="p-1.5 rounded-xl text-slate-400 hover:text-indigo-400 hover:bg-slate-800 transition-colors"
+              title={t.adminPanel}
             >
-              <Shield size={17} />
+              <Shield size={16} />
             </button>
           )}
 
           <button
             onClick={() => onOpenCreate('direct')}
-            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
-            title="New Chat or Group"
+            className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            title={t.newChat}
           >
-            <Plus size={18} />
+            <Plus size={17} />
           </button>
 
           <button
             onClick={onOpenSettings}
-            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
-            title="Settings"
+            className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            title={t.settings}
           >
-            <Settings size={17} />
+            <Settings size={16} />
           </button>
         </div>
       </div>
@@ -157,7 +161,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               className="w-full text-left px-3 py-1.5 text-xs text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg flex items-center gap-2 cursor-pointer transition-colors"
             >
               <Settings size={14} className="text-slate-400" />
-              <span>Account Settings</span>
+              <span>{t.settings}</span>
             </button>
             {isAdmin && (
               <button
@@ -165,7 +169,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 className="w-full text-left px-3 py-1.5 text-xs text-indigo-300 hover:text-indigo-200 hover:bg-slate-800 rounded-lg flex items-center gap-2 cursor-pointer transition-colors"
               >
                 <Shield size={14} className="text-indigo-400" />
-                <span>Admin Dashboard</span>
+                <span>{t.adminPanel}</span>
               </button>
             )}
           </div>
@@ -176,7 +180,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               className="w-full text-left px-3 py-1.5 text-xs text-rose-400 hover:bg-rose-500/10 rounded-lg flex items-center gap-2 cursor-pointer transition-colors"
             >
               <LogOut size={13} />
-              <span>Sign Out</span>
+              <span>{t.logout}</span>
             </button>
           </div>
         </div>
@@ -188,7 +192,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={15} />
           <input
             type="text"
-            placeholder="Search chats, messages, groups..."
+            placeholder={language === 'rw' ? 'Shakisha ubutumwa, amatsinda...' : 'Search chats, messages, groups...'}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full bg-slate-950 border border-slate-800/80 rounded-xl pl-9 pr-4 py-1.5 text-xs text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
@@ -204,11 +208,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* Category Navigation Tabs */}
       <div className="flex items-center gap-1 px-3 pb-2 overflow-x-auto no-scrollbar">
         {[
-          { id: 'all', label: 'All', icon: MessageSquare },
-          { id: 'direct', label: 'DMs', icon: MessageSquare },
-          { id: 'group', label: 'Groups', icon: Users },
-          { id: 'channel', label: 'Channels', icon: Radio },
-          { id: 'archived', label: 'Archived', icon: Archive },
+          { id: 'all', label: language === 'rw' ? 'Byose' : 'All', icon: MessageSquare },
+          { id: 'direct', label: language === 'rw' ? 'DMs' : 'DMs', icon: MessageSquare },
+          { id: 'group', label: language === 'rw' ? 'Amatsinda' : 'Groups', icon: Users },
+          { id: 'channel', label: language === 'rw' ? 'Imiyoboro' : 'Channels', icon: Radio },
+          { id: 'archived', label: language === 'rw' ? 'Ububiko' : 'Archived', icon: Archive },
         ].map((tab) => (
           <button
             key={tab.id}
@@ -230,10 +234,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {filteredConversations.length === 0 ? (
           <div className="p-8 text-center text-xs text-slate-500 flex flex-col items-center gap-2">
             <MessageSquare size={24} className="opacity-40" />
-            <span>No conversations found in this category.</span>
+            <span>{t.noConversations}</span>
             <button
               onClick={() => onOpenCreate('direct')}
-              className="mt-2 text-indigo-400 hover:underline font-medium text-xs"
+              className="mt-2 text-indigo-400 hover:underline font-medium text-xs cursor-pointer"
             >
               Start a new conversation
             </button>

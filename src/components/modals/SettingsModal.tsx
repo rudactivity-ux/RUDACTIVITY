@@ -12,9 +12,13 @@ import {
   Check,
   AlertTriangle,
   Smartphone,
-  Eye
+  Eye,
+  Camera,
+  Upload,
+  RefreshCw
 } from 'lucide-react';
 import { PWAInstallButton } from '../pwa/PWAInstallButton.tsx';
+import { uploadAvatar } from '../../utils/imageUpload.ts';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -42,6 +46,33 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
   const [statusText, setStatusText] = useState(user?.statusText || '');
   const [phone, setPhone] = useState(user?.phone || '');
   const [avatarUrl, setAvatarUrl] = useState(user?.avatar || '');
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadErr, setUploadErr] = useState('');
+  const avatarInputRef = React.useRef<HTMLInputElement | null>(null);
+
+  const handleDevicePhotoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploading(true);
+    setUploadErr('');
+    try {
+      const res = await uploadAvatar(file);
+      if (res.error) {
+        setUploadErr(res.error);
+      } else if (res.url) {
+        setAvatarUrl(res.url);
+        // Persist immediately to user's profile
+        await updateProfile({ avatar: res.url });
+        setSaveSuccess(true);
+        setTimeout(() => setSaveSuccess(false), 2500);
+      }
+    } catch (err: any) {
+      setUploadErr(err.message || 'Failed to upload photo');
+    } finally {
+      setIsUploading(false);
+      if (e.target) e.target.value = '';
+    }
+  };
 
   // Password state
   const [currPassword, setCurrPassword] = useState('');
@@ -245,22 +276,91 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
             {/* Tab: Profile */}
             {activeTab === 'profile' && (
               <form onSubmit={handleSaveProfile} className="space-y-4">
+                {/* Avatar Selection: Device upload & presets */}
                 <div>
-                  <label className="block text-xs font-medium text-slate-400 mb-2">Avatar Selection</label>
-                  <div className="flex items-center gap-3">
-                    {avatarOptions.map((opt, i) => (
+                  <label className="block text-xs font-semibold text-slate-300 mb-2">
+                    Profile Picture (Ifoto y'Umwirondoro)
+                  </label>
+                  
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-4 p-3.5 bg-slate-950/80 rounded-2xl border border-slate-800">
+                    {/* Current Avatar preview with Camera Overlay */}
+                    <div
+                      className="relative group cursor-pointer shrink-0"
+                      onClick={() => avatarInputRef.current?.click()}
+                      title="Kanda hano uhitemo ifoto muri telefone cyangwa PC"
+                    >
                       <img
-                        key={i}
-                        src={opt}
-                        alt="Avatar Option"
-                        onClick={() => setAvatarUrl(opt)}
-                        className={`w-12 h-12 rounded-full object-cover cursor-pointer transition-all ${
-                          avatarUrl === opt
-                            ? 'ring-2 ring-indigo-500 scale-105 shadow-lg'
-                            : 'opacity-60 hover:opacity-100'
-                        }`}
+                        src={avatarUrl || user?.avatar || '/src/assets/images/rudactivity_logo_1793024816643.jpg'}
+                        alt="Avatar Preview"
+                        className="w-16 h-16 rounded-2xl object-cover ring-2 ring-indigo-500 shadow-md shadow-indigo-500/20 bg-slate-900"
                       />
-                    ))}
+                      <div className="absolute inset-0 bg-black/50 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
+                        <Camera size={20} />
+                      </div>
+                      {isUploading && (
+                        <div className="absolute inset-0 bg-black/70 rounded-2xl flex items-center justify-center">
+                          <RefreshCw size={20} className="animate-spin text-indigo-400" />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Upload button from device */}
+                    <div className="flex-1 space-y-1.5">
+                      <input
+                        ref={avatarInputRef}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleDevicePhotoSelect}
+                      />
+
+                      <button
+                        type="button"
+                        disabled={isUploading}
+                        onClick={() => avatarInputRef.current?.click()}
+                        className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white rounded-xl text-xs font-medium flex items-center gap-2 transition-all shadow-md shadow-indigo-600/20 cursor-pointer disabled:opacity-50"
+                      >
+                        {isUploading ? (
+                          <>
+                            <RefreshCw size={13} className="animate-spin" />
+                            <span>Iri gutunganywa (Processing)...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Upload size={13} />
+                            <span>Hitamo Ifoto muri Device (Telefone / PC)</span>
+                          </>
+                        )}
+                      </button>
+
+                      <p className="text-[11px] text-slate-400">
+                        PNG, JPG cyangwa WebP. Ifoto ihita yongerwa muri profile yawe.
+                      </p>
+
+                      {uploadErr && (
+                        <p className="text-xs text-rose-400">{uploadErr}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Preset Options */}
+                  <div className="mt-2.5 flex items-center gap-2.5">
+                    <span className="text-[11px] text-slate-400">Amafoto yateguwe:</span>
+                    <div className="flex items-center gap-2">
+                      {avatarOptions.map((opt, i) => (
+                        <img
+                          key={i}
+                          src={opt}
+                          alt="Preset avatar option"
+                          onClick={() => setAvatarUrl(opt)}
+                          className={`w-9 h-9 rounded-xl object-cover cursor-pointer transition-all ${
+                            avatarUrl === opt
+                              ? 'ring-2 ring-indigo-500 scale-105 shadow-md shadow-indigo-500/30'
+                              : 'opacity-60 hover:opacity-100 border border-slate-800'
+                          }`}
+                        />
+                      ))}
+                    </div>
                   </div>
                 </div>
 

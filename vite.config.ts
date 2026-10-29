@@ -14,8 +14,8 @@ export default defineConfig(() => {
         includeAssets: ['favicon.png', 'apple-touch-icon.png', 'icon.svg'],
         manifest: {
           id: '/',
-          name: 'RUDACTIVITY - Social Messaging & Calls',
-          short_name: 'RUDACTIVITY',
+          name: 'E-RUDACTIVITY - Social Messaging & Calls',
+          short_name: 'E-RUDACTIVITY',
           description: 'High-performance, secure international social messaging platform featuring real-time chat, voice & video calls, channels, groups, and media sharing.',
           theme_color: '#4f46e5',
           background_color: '#020617',
@@ -47,6 +47,7 @@ export default defineConfig(() => {
         },
         workbox: {
           globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
+          navigateFallbackDenylist: [/^\/api/],
           runtimeCaching: [
             {
               urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
@@ -79,7 +80,7 @@ export default defineConfig(() => {
           ],
         },
         devOptions: {
-          enabled: true,
+          enabled: false,
           type: 'module',
         },
       }),

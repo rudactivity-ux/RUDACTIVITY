@@ -753,7 +753,36 @@ app.get('/api/health', (req: Request, res: Response) => {
 });
 
 // --- Authentication ---
-app.post('/api/auth/register', (req: Request, res: Response) => {
+app.get(['/api/auth/check-username', '/api/auth/check-username/'], (req: Request, res: Response) => {
+  try {
+    const rawUsername = req.query.username;
+    const currentEmail = req.query.email ? String(req.query.email).trim().toLowerCase() : '';
+    if (!rawUsername) {
+      return res.status(400).json({ available: false, error: 'Username parameter is required.' });
+    }
+    const clean = String(rawUsername).trim().toLowerCase().replace(/^@/, '').replace(/\s+/g, '_');
+    if (clean.length < 2) {
+      return res.json({ available: false, error: 'Username must be at least 2 characters long.' });
+    }
+    if (!/^[a-z0-9_.-]{2,32}$/.test(clean)) {
+      return res.json({ available: false, error: 'Username must contain only letters, numbers, underscores, dots, or dashes (2-32 chars).' });
+    }
+
+    for (const existing of Object.values(db.users)) {
+      if (existing.username.toLowerCase() === clean) {
+        if (currentEmail && existing.email.toLowerCase() === currentEmail) {
+          return res.json({ available: true, username: clean });
+        }
+        return res.json({ available: false, error: 'This username is already taken. Please choose another.' });
+      }
+    }
+    return res.json({ available: true, username: clean });
+  } catch (err: any) {
+    return res.status(500).json({ available: false, error: 'Error checking username.' });
+  }
+});
+
+app.post(['/api/auth/register', '/api/auth/register/'], (req: Request, res: Response) => {
   try {
     const { name, username, email, password, confirmPassword, phone, bio, avatar } = req.body || {};
 
@@ -796,19 +825,26 @@ app.post('/api/auth/register', (req: Request, res: Response) => {
     }
 
     // Check unique username & email
+    let userToUpdate: any = null;
     for (const existing of Object.values(db.users)) {
       if (existing.username.toLowerCase() === cleanUsername) {
-        return res.status(409).json({ error: 'This username is already taken. Please choose another username.' });
+        if (existing.email.toLowerCase() !== cleanEmail) {
+          return res.status(409).json({ error: 'This username is already taken. Please choose another username.' });
+        }
       }
       if (existing.email.toLowerCase() === cleanEmail) {
-        return res.status(409).json({ error: 'An account with this email address already exists. Please sign in or reset your password.' });
+        // If account was created via Google or unconfigured, allow setting their chosen username and password
+        if ((existing as any).googleId || !existing.passwordHash) {
+          userToUpdate = existing;
+        } else {
+          return res.status(409).json({ error: 'An account with this email address already exists. Please sign in or reset your password.' });
+        }
       }
     }
 
     const salt = generateSalt();
     const passwordHash = hashPassword(String(password), salt);
     const now = new Date().toISOString();
-    const userId = `user_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
 
     // Default avatars list
     const defaultAvatars = [
@@ -818,28 +854,46 @@ app.post('/api/auth/register', (req: Request, res: Response) => {
     const chosenAvatar = avatar && String(avatar).trim() ? String(avatar).trim() : defaultAvatars[Math.floor(Math.random() * defaultAvatars.length)];
     const chosenBio = bio && String(bio).trim() ? String(bio).trim() : 'Hey there! I am using RUDACTIVITY.';
 
-    const newUser: any = {
-      id: userId,
-      name: cleanName,
-      username: cleanUsername,
-      email: cleanEmail,
-      phone: cleanPhone,
-      avatar: chosenAvatar,
-      role: 'user',
-      bio: chosenBio,
-      isOnline: true,
-      lastSeen: now,
-      statusText: 'Available',
-      isVerified: true,
-      twoFactorEnabled: false,
-      createdAt: now,
-      passwordHash,
-      salt,
-      privacySettings: defaultPrivacySettings(),
-      blockedUserIds: [],
-    };
+    let savedUser: any;
+    let userId: string;
 
-    db.users[userId] = newUser;
+    if (userToUpdate) {
+      userId = userToUpdate.id;
+      userToUpdate.name = cleanName;
+      userToUpdate.username = cleanUsername;
+      userToUpdate.phone = cleanPhone || userToUpdate.phone;
+      userToUpdate.avatar = chosenAvatar;
+      userToUpdate.bio = chosenBio;
+      userToUpdate.passwordHash = passwordHash;
+      userToUpdate.salt = salt;
+      userToUpdate.isOnline = true;
+      userToUpdate.lastSeen = now;
+      savedUser = userToUpdate;
+    } else {
+      userId = `user_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+      const newUser: any = {
+        id: userId,
+        name: cleanName,
+        username: cleanUsername,
+        email: cleanEmail,
+        phone: cleanPhone,
+        avatar: chosenAvatar,
+        role: 'user',
+        bio: chosenBio,
+        isOnline: true,
+        lastSeen: now,
+        statusText: 'Available',
+        isVerified: true,
+        twoFactorEnabled: false,
+        createdAt: now,
+        passwordHash,
+        salt,
+        privacySettings: defaultPrivacySettings(),
+        blockedUserIds: [],
+      };
+      db.users[userId] = newUser;
+      savedUser = newUser;
+    }
 
     // Automatically add to official announcement channel
     const officialChannel = db.conversations['conv_official_channel'];
@@ -867,7 +921,7 @@ app.post('/api/auth/register', (req: Request, res: Response) => {
 
     return res.status(201).json({
       token,
-      user: sanitizeUser(newUser),
+      user: sanitizeUser(savedUser),
       message: 'Account created successfully! Welcome to RUDACTIVITY.',
     });
   } catch (err: any) {
@@ -1839,6 +1893,55 @@ app.post('/api/messages/:id/pin', authenticateUser, (req: Request, res: Response
   res.json({ isPinned: msg.isPinned });
 });
 
+// Avatar upload endpoint (accessible during registration and by logged-in users)
+app.post('/api/upload/avatar', (req: Request, res: Response) => {
+  const { base64Data, fileName } = req.body;
+
+  if (!base64Data || typeof base64Data !== 'string') {
+    return res.status(400).json({ error: 'Ifoto ntibonetse cyangwa ifite ikibazo (Image data required).' });
+  }
+
+  try {
+    const matches = base64Data.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+    let mimeType = 'image/jpeg';
+    let rawData = base64Data;
+    let ext = 'jpg';
+
+    if (matches && matches.length === 3) {
+      mimeType = matches[1];
+      rawData = matches[2];
+      if (mimeType.includes('png')) ext = 'png';
+      else if (mimeType.includes('webp')) ext = 'webp';
+      else if (mimeType.includes('gif')) ext = 'gif';
+      else ext = 'jpg';
+    }
+
+    if (!mimeType.startsWith('image/')) {
+      return res.status(400).json({ error: 'Ugomba gushyiraho ifoto gusa (Only image files are allowed).' });
+    }
+
+    const buffer = Buffer.from(rawData, 'base64');
+    if (buffer.length > 10 * 1024 * 1024) {
+      return res.status(413).json({ error: 'Ifoto irengeje ubushobozi bwa 10MB (Avatar exceeds 10MB limit).' });
+    }
+
+    const safeFileName = `avatar_${Date.now()}_${crypto.randomBytes(4).toString('hex')}.${ext}`;
+    const filePath = path.join(UPLOADS_DIR, safeFileName);
+    fs.writeFileSync(filePath, buffer);
+
+    const fileUrl = `/uploads/${safeFileName}`;
+    return res.json({
+      url: fileUrl,
+      size: buffer.length,
+      mimeType,
+      message: 'Ifoto yoherejwe neza (Avatar uploaded successfully).'
+    });
+  } catch (err: any) {
+    console.error('Avatar upload error:', err);
+    return res.status(500).json({ error: 'Avatar upload failed: ' + (err.message || 'Unknown error') });
+  }
+});
+
 // ---------------------------------------------------------------------------
 // File Uploads
 // ---------------------------------------------------------------------------
@@ -2039,7 +2142,7 @@ app.get('/api/admin/audit-logs', authenticateUser, requireAdmin, (req: Request, 
 });
 
 // API 404 Handler - prevents missing API endpoints from returning Vite index.html
-app.use('/api/*', (req: Request, res: Response) => {
+app.use('/api', (req: Request, res: Response) => {
   res.status(404).json({ error: 'API endpoint not found.' });
 });
 

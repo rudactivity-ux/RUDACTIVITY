@@ -4,6 +4,7 @@
  */
 
 import React, { useState } from 'react';
+import { LanguageProvider, useLanguage } from './context/LanguageContext.tsx';
 import { AuthProvider, useAuth } from './context/AuthContext.tsx';
 import { WebSocketProvider } from './context/WebSocketContext.tsx';
 import { ChatProvider, useChat } from './context/ChatContext.tsx';
@@ -25,6 +26,7 @@ import { OfflineIndicator } from './components/pwa/OfflineIndicator.tsx';
 function MainLayout() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const { activeConversationId, setActiveConversationId } = useChat();
+  const { t } = useLanguage();
 
   const [isInfoPanelOpen, setIsInfoPanelOpen] = useState(false);
   const [createModalState, setCreateModalState] = useState<{ isOpen: boolean; tab: 'direct' | 'group' | 'channel' }>({
@@ -43,11 +45,11 @@ function MainLayout() {
       <div className="h-full w-full flex flex-col items-center justify-center bg-slate-950 text-white gap-4">
         <img
           src="/src/assets/images/rudactivity_logo_1793024816643.jpg"
-          alt="RUDACTIVITY"
+          alt="E-RUDACTIVITY"
           className="w-16 h-16 rounded-2xl animate-pulse ring-2 ring-indigo-500/30 object-cover"
         />
         <div className="flex items-center gap-2 text-xs font-mono text-indigo-400">
-          <span>CONNECTING TO RUDACTIVITY NETWORK</span>
+          <span>{t.connecting}</span>
         </div>
       </div>
     );
@@ -134,16 +136,18 @@ function MainLayout() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <WebSocketProvider>
-        <ChatProvider>
-          <CallProvider>
-            <MainLayout />
-            <AutoInstallModal />
-            <OfflineIndicator />
-          </CallProvider>
-        </ChatProvider>
-      </WebSocketProvider>
-    </AuthProvider>
+    <LanguageProvider>
+      <AuthProvider>
+        <WebSocketProvider>
+          <ChatProvider>
+            <CallProvider>
+              <MainLayout />
+              <AutoInstallModal />
+              <OfflineIndicator />
+            </CallProvider>
+          </ChatProvider>
+        </WebSocketProvider>
+      </AuthProvider>
+    </LanguageProvider>
   );
 }

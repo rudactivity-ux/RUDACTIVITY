@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext.tsx';
 import {
   Lock,
@@ -15,6 +15,8 @@ import {
   FileText,
   ShieldCheck,
   Camera,
+  Upload,
+  Trash2,
   Eye,
   EyeOff,
   AlertCircle,
@@ -23,6 +25,9 @@ import {
 } from 'lucide-react';
 import { COUNTRIES, Country } from '../../data/countries.ts';
 import { PWAInstallButton } from '../pwa/PWAInstallButton.tsx';
+import { uploadAvatar } from '../../utils/imageUpload.ts';
+import { useLanguage } from '../../context/LanguageContext.tsx';
+import { LanguageToggle } from '../common/LanguageToggle.tsx';
 
 // Preset avatar options
 const PRESET_AVATARS = [
@@ -34,6 +39,7 @@ const PRESET_AVATARS = [
 
 export const AuthModal: React.FC = () => {
   const { login, googleLogin, register, forgotPassword, resetPassword, isAuthenticated } = useAuth();
+  const { language, t } = useLanguage();
 
   const [mode, setMode] = useState<'login' | 'register' | 'forgot'>('login');
 
@@ -60,9 +66,79 @@ export const AuthModal: React.FC = () => {
   const [name, setName] = useState('');
   const [bio, setBio] = useState('');
   const [selectedAvatar, setSelectedAvatar] = useState(PRESET_AVATARS[0]);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [customAvatarUploaded, setCustomAvatarUploaded] = useState(false);
+  const [avatarUploadError, setAvatarUploadError] = useState('');
+  const avatarFileInputRef = React.useRef<HTMLInputElement | null>(null);
 
-  // Step 3: Username Handle
+  const handleDeviceAvatarSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingAvatar(true);
+    setAvatarUploadError('');
+
+    try {
+      const result = await uploadAvatar(file);
+      if (result.error) {
+        setAvatarUploadError(result.error);
+      } else if (result.url) {
+        setSelectedAvatar(result.url);
+        setCustomAvatarUploaded(true);
+      }
+    } catch (err: any) {
+      setAvatarUploadError(err.message || 'Kunanirwa gushyiraho ifoto');
+    } finally {
+      setIsUploadingAvatar(false);
+      if (e.target) e.target.value = '';
+    }
+  };
+
+  // Step 3: Username Handle & Live Availability Verification
   const [username, setUsername] = useState('');
+  const [usernameCheck, setUsernameCheck] = useState<{
+    status: 'idle' | 'checking' | 'available' | 'taken' | 'invalid';
+    message?: string;
+  }>({ status: 'idle' });
+
+  // Real-time verification of username availability with backend database
+  useEffect(() => {
+    if (mode !== 'register' || regStep !== 3) return;
+    const clean = username.trim().toLowerCase().replace(/^@/, '').replace(/\s+/g, '_');
+    if (!clean) {
+      setUsernameCheck({ status: 'idle' });
+      return;
+    }
+    if (clean.length < 2) {
+      setUsernameCheck({ status: 'invalid', message: 'Min 2 characters required' });
+      return;
+    }
+    if (!/^[a-z0-9_.-]{2,32}$/.test(clean)) {
+      setUsernameCheck({ status: 'invalid', message: 'Letters, numbers, underscores, dots, or dashes only' });
+      return;
+    }
+
+    setUsernameCheck({ status: 'checking', message: 'Verifying...' });
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/auth/check-username?username=${encodeURIComponent(clean)}&email=${encodeURIComponent(email.trim())}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.available) {
+            setUsernameCheck({ status: 'available', message: 'Username is available' });
+          } else {
+            setUsernameCheck({ status: 'taken', message: data.error || 'Username is already taken' });
+          }
+        } else {
+          setUsernameCheck({ status: 'idle' });
+        }
+      } catch (err) {
+        setUsernameCheck({ status: 'idle' });
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [username, mode, regStep, email]);
 
   // Forgot Password / Password Reset States
   const [resetEmail, setResetEmail] = useState('');
@@ -153,7 +229,7 @@ export const AuthModal: React.FC = () => {
     try {
       const googleData = {
         email: email.trim() || 'rudactivity@gmail.com',
-        name: name.trim() || 'RUDACTIVITY Google User',
+        name: name.trim() || (language === 'rw' ? 'Umukoresha wa E-RUDACTIVITY' : 'E-RUDACTIVITY User'),
         picture: selectedAvatar || 'https://lh3.googleusercontent.com/a/default-user=s96-c',
         sub: `google_${Date.now()}`,
       };
@@ -280,15 +356,15 @@ export const AuthModal: React.FC = () => {
       password: regPassword,
       confirmPassword,
       phone: fullPhone,
-      bio: bio.trim() || 'Hey there! I am using RUDACTIVITY.',
+      bio: bio.trim() || (language === 'rw' ? 'Muraho! Ndi gukoresha E-RUDACTIVITY.' : 'Hey there! I am using E-RUDACTIVITY.'),
       avatar: selectedAvatar,
     });
     setIsLoading(false);
 
     if (res.success) {
-      setSuccessMsg(res.message || 'Account created successfully! Welcome to RUDACTIVITY.');
+      setSuccessMsg(res.message || t.registerSuccess);
     } else {
-      setErrorMsg(res.error || 'Registration failed. Please check your information and try again.');
+      setErrorMsg(res.error || (language === 'rw' ? 'Kwiyandikisha byanze. Nyamuneka gerageza nanone.' : 'Registration failed. Please check your information and try again.'));
     }
   };
 
@@ -365,7 +441,10 @@ export const AuthModal: React.FC = () => {
   return (
     <div className="fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
       <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-7 shadow-2xl relative overflow-hidden max-h-[92vh] flex flex-col my-auto">
-        {/* PWA Install Button */}
+        {/* Top Controls: Language Switcher (Left) and PWA Install (Right) */}
+        <div className="absolute top-4 left-4 z-10">
+          <LanguageToggle variant="compact" />
+        </div>
         <div className="absolute top-4 right-4 z-10">
           <PWAInstallButton variant="compact" />
         </div>
@@ -375,20 +454,20 @@ export const AuthModal: React.FC = () => {
         <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-purple-600/15 rounded-full blur-3xl pointer-events-none" />
 
         {/* Brand Lockup */}
-        <div className="flex flex-col items-center text-center mb-3.5 shrink-0">
+        <div className="flex flex-col items-center text-center mb-3.5 shrink-0 mt-1">
           <div className="relative mb-2">
             <img
               src="/src/assets/images/rudactivity_logo_1793024816643.jpg"
-              alt="RUDACTIVITY"
+              alt="E-RUDACTIVITY"
               className="w-12 h-12 rounded-2xl shadow-xl shadow-indigo-500/20 ring-1 ring-indigo-500/30 object-cover"
               onError={(e) => {
                 (e.target as HTMLElement).style.display = 'none';
               }}
             />
           </div>
-          <h1 className="text-xl font-bold tracking-tight text-white">RUDACTIVITY</h1>
+          <h1 className="text-xl font-bold tracking-tight text-white">E-RUDACTIVITY</h1>
           <p className="text-[11px] text-slate-400 mt-0.5 max-w-xs">
-            Global Social Messaging, High-Definition Calls & Channels
+            {t.appTagline}
           </p>
         </div>
 
@@ -411,7 +490,7 @@ export const AuthModal: React.FC = () => {
                   : 'text-slate-400 hover:text-white'
               }`}
             >
-              Sign In (Kwinjira)
+              {t.signIn}
             </button>
             <button
               type="button"
@@ -428,14 +507,14 @@ export const AuthModal: React.FC = () => {
                   : 'text-slate-400 hover:text-white'
               }`}
             >
-              Create Account (Kwiyandikisha)
+              {t.createAccount}
             </button>
           </div>
         ) : (
           <div className="flex items-center justify-between mb-3 shrink-0 p-2 bg-slate-950/70 border border-slate-800 rounded-xl">
             <div className="flex items-center gap-2 text-xs font-semibold text-white">
               <KeyRound size={15} className="text-indigo-400" />
-              <span>Password Recovery (Guhindura Ijambobanga)</span>
+              <span>{t.passwordRecovery}</span>
             </div>
             <button
               type="button"
@@ -446,7 +525,7 @@ export const AuthModal: React.FC = () => {
               }}
               className="text-[11px] text-indigo-400 hover:text-indigo-300 font-medium cursor-pointer"
             >
-              Back to Sign In
+              {t.back}
             </button>
           </div>
         )}
@@ -478,13 +557,13 @@ export const AuthModal: React.FC = () => {
                   d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
                 />
               </svg>
-              <span>Gukomeza na Google (Continue with Google)</span>
+              <span>{t.continueWithGoogle}</span>
             </button>
 
             <div className="relative my-2.5 flex items-center justify-center">
               <div className="border-t border-slate-800 w-full" />
               <span className="bg-slate-900 px-2 text-[10px] text-slate-500 uppercase tracking-wider font-semibold absolute">
-                Cyangwa (Or)
+                {t.or}
               </span>
             </div>
           </div>
@@ -495,13 +574,13 @@ export const AuthModal: React.FC = () => {
           <div className="mb-3 p-2 bg-slate-950/80 border border-slate-800 rounded-2xl shrink-0">
             <div className="flex items-center justify-between text-[11px] font-medium text-slate-400 mb-1.5 px-1">
               <span className={regStep >= 1 ? 'text-indigo-400 font-bold' : ''}>
-                1. Credentials & Phone
+                {t.step1Title}
               </span>
               <span className={regStep >= 2 ? 'text-indigo-400 font-bold' : ''}>
-                2. Full Name & Bio
+                {t.step2Title}
               </span>
               <span className={regStep >= 3 ? 'text-indigo-400 font-bold' : ''}>
-                3. Username (@handle)
+                {t.step3Title}
               </span>
             </div>
             {/* Visual step bar */}
@@ -527,9 +606,37 @@ export const AuthModal: React.FC = () => {
 
         {/* Error notification banner */}
         {errorMsg && (
-          <div className="mb-3 p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/25 text-rose-300 text-xs shrink-0 flex items-start gap-2">
-            <AlertCircle size={15} className="text-rose-400 shrink-0 mt-0.5" />
-            <span className="flex-1 leading-relaxed">{errorMsg}</span>
+          <div className="mb-3 p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/25 text-rose-300 text-xs shrink-0 flex flex-col gap-1.5">
+            <div className="flex items-start gap-2">
+              <AlertCircle size={15} className="text-rose-400 shrink-0 mt-0.5" />
+              <span className="flex-1 leading-relaxed">{errorMsg}</span>
+            </div>
+            {errorMsg.toLowerCase().includes('already exists') && (
+              <div className="flex items-center gap-2 pt-1.5 border-t border-rose-500/20 text-[11px]">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMode('login');
+                    setIdentifier(email || username);
+                    setErrorMsg('');
+                  }}
+                  className="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-lg transition-colors cursor-pointer"
+                >
+                  Sign In (Injira hano)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMode('forgot');
+                    setResetEmail(email);
+                    setErrorMsg('');
+                  }}
+                  className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium rounded-lg transition-colors cursor-pointer"
+                >
+                  Reset Password (Guhindura)
+                </button>
+              </div>
+            )}
           </div>
         )}
 
@@ -548,7 +655,7 @@ export const AuthModal: React.FC = () => {
           <form onSubmit={handleLogin} className="space-y-3 flex-1 overflow-y-auto pr-0.5">
             <div>
               <label htmlFor="login-identifier" className="block text-xs font-medium text-slate-300 mb-1">
-                Username, Telefone, cyangwa Email
+                {language === 'rw' ? 'Izina ry\'ukoresha, Telefone cyangwa Email' : 'Username, Phone, or Email'}
               </label>
               <div className="relative">
                 <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
@@ -557,7 +664,7 @@ export const AuthModal: React.FC = () => {
                   name="identifier"
                   type="text"
                   autoComplete="username"
-                  placeholder="Username, +250... or email"
+                  placeholder={language === 'rw' ? 'Username, +250... cyangwa email' : 'Username, +250... or email'}
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
                   className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-xs sm:text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
@@ -569,7 +676,7 @@ export const AuthModal: React.FC = () => {
             <div>
               <div className="flex items-center justify-between mb-1">
                 <label htmlFor="login-password" className="block text-xs font-medium text-slate-300">
-                  Ijambobanga (Password)
+                  {t.passwordLabel}
                 </label>
                 <button
                   type="button"
@@ -581,7 +688,7 @@ export const AuthModal: React.FC = () => {
                   }}
                   className="text-[11px] text-indigo-400 hover:text-indigo-300 transition-colors cursor-pointer"
                 >
-                  Forgot password? (Wibagiwe?)
+                  {t.forgotPassword}
                 </button>
               </div>
 
@@ -617,11 +724,11 @@ export const AuthModal: React.FC = () => {
               {isLoading ? (
                 <>
                   <RefreshCw size={14} className="animate-spin" />
-                  <span>Signing in... (Irikukwinjiza...)</span>
+                  <span>{language === 'rw' ? 'Irikukwinjiza...' : 'Signing in...'}</span>
                 </>
               ) : (
                 <>
-                  <span>Sign In (Kwinjira)</span>
+                  <span>{t.signIn}</span>
                   <ArrowRight size={14} />
                 </>
               )}
@@ -644,19 +751,21 @@ export const AuthModal: React.FC = () => {
                       <Mail size={14} />
                     </div>
                     <div>
-                      <div className="text-xs font-semibold text-indigo-200">Email Registration</div>
-                      <div className="text-[10px] text-slate-400">Kwiyandikisha ukoresheje Email & Telefone</div>
+                      <div className="text-xs font-semibold text-indigo-200">
+                        {language === 'rw' ? 'Kwiyandikisha na Email' : 'Email Registration'}
+                      </div>
+                      <div className="text-[10px] text-slate-400">{t.step1Subtitle}</div>
                     </div>
                   </div>
                   <span className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">
-                    Step 1 ya 3
+                    Step 1 / 3
                   </span>
                 </div>
 
                 {/* Email Address */}
                 <div>
                   <label htmlFor="reg-email" className="block text-xs font-medium text-slate-300 mb-1">
-                    Email Address (Anuwani ya Email) <span className="text-indigo-400">*</span>
+                    {t.emailLabel} <span className="text-indigo-400">*</span>
                   </label>
                   <div className="relative">
                     <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" size={15} />
@@ -665,7 +774,7 @@ export const AuthModal: React.FC = () => {
                       name="email"
                       type="email"
                       autoComplete="email"
-                      placeholder="e.g. name@example.com"
+                      placeholder={t.emailPlaceholder}
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-2 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
@@ -677,7 +786,7 @@ export const AuthModal: React.FC = () => {
                 {/* Country & Phone Number */}
                 <div>
                   <label htmlFor="reg-phone" className="block text-xs font-medium text-slate-300 mb-1">
-                    Country & Phone Number (Igihugu na Nimero ya Telefone) <span className="text-indigo-400">*</span>
+                    {t.phoneLabel} <span className="text-indigo-400">*</span>
                   </label>
 
                   <div className="flex items-center gap-2">
@@ -687,7 +796,7 @@ export const AuthModal: React.FC = () => {
                         type="button"
                         onClick={() => setIsCountryDropdownOpen(!isCountryDropdownOpen)}
                         className="h-9 px-2.5 bg-slate-950 border border-slate-800 rounded-xl flex items-center gap-1 hover:border-indigo-500/60 transition-colors text-xs text-white shrink-0 cursor-pointer"
-                        title="Select Country"
+                        title={t.countryLabel}
                       >
                         <span className="text-base">{selectedCountry.flag}</span>
                         <span className="font-mono text-slate-300 font-medium text-[11px]">
@@ -703,7 +812,7 @@ export const AuthModal: React.FC = () => {
                             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500" size={13} />
                             <input
                               type="text"
-                              placeholder="Search country or code..."
+                              placeholder={language === 'rw' ? 'Shaka igihugu cyangwa kode...' : 'Search country or code...'}
                               value={countrySearch}
                               onChange={(e) => setCountrySearch(e.target.value)}
                               className="w-full bg-slate-950 border border-slate-800 rounded-lg pl-7 pr-3 py-1.5 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500"
@@ -749,7 +858,7 @@ export const AuthModal: React.FC = () => {
                         name="phone"
                         type="tel"
                         autoComplete="tel"
-                        placeholder="788 123 456"
+                        placeholder={t.phonePlaceholder}
                         value={phoneNumber}
                         onChange={(e) => setPhoneNumber(e.target.value)}
                         className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
@@ -763,7 +872,7 @@ export const AuthModal: React.FC = () => {
                 <div>
                   <div className="flex items-center justify-between mb-1">
                     <label htmlFor="reg-password" className="block text-xs font-medium text-slate-300">
-                      Password (Ijambobanga) <span className="text-indigo-400">*</span>
+                      {t.passwordLabel} <span className="text-indigo-400">*</span>
                     </label>
                     {regPassword && (
                       <span className="text-[10px] text-slate-400 font-medium">
@@ -779,7 +888,7 @@ export const AuthModal: React.FC = () => {
                       name="password"
                       type={showRegPassword ? 'text' : 'password'}
                       autoComplete="new-password"
-                      placeholder="Min 8 characters with letters & numbers"
+                      placeholder={t.passwordPlaceholder}
                       value={regPassword}
                       onChange={(e) => setRegPassword(e.target.value)}
                       className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-10 py-2 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
@@ -814,7 +923,7 @@ export const AuthModal: React.FC = () => {
                 <div>
                   <div className="flex items-center justify-between mb-1">
                     <label htmlFor="reg-confirm-password" className="block text-xs font-medium text-slate-300">
-                      Confirm Password (Ongera usubiremo) <span className="text-indigo-400">*</span>
+                      {t.confirmPasswordLabel} <span className="text-indigo-400">*</span>
                     </label>
                     {confirmPassword && (
                       <span
@@ -825,10 +934,10 @@ export const AuthModal: React.FC = () => {
                         {passwordsMatch ? (
                           <>
                             <Check size={11} />
-                            <span>Passwords match</span>
+                            <span>{language === 'rw' ? 'Birasana' : 'Passwords match'}</span>
                           </>
                         ) : (
-                          <span>Do not match</span>
+                          <span>{language === 'rw' ? 'Binyuranye' : 'Do not match'}</span>
                         )}
                       </span>
                     )}
@@ -841,7 +950,7 @@ export const AuthModal: React.FC = () => {
                       name="confirmPassword"
                       type={showConfirmPassword ? 'text' : 'password'}
                       autoComplete="new-password"
-                      placeholder="Re-enter your password"
+                      placeholder={t.confirmPasswordPlaceholder}
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       className={`w-full bg-slate-950 border rounded-xl pl-10 pr-10 py-2 text-xs text-white placeholder:text-slate-500 focus:outline-none transition-colors ${
@@ -868,7 +977,7 @@ export const AuthModal: React.FC = () => {
                   type="submit"
                   className="w-full py-2.5 mt-2 bg-indigo-600 hover:bg-indigo-500 active:scale-[0.99] text-white font-semibold text-xs rounded-xl shadow-lg shadow-indigo-600/30 transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  <span>Komeza muri Step 2 (Amazina na Imyirondoro)</span>
+                  <span>{language === 'rw' ? 'Komeza muri Step 2 (Amazina & Ifoto)' : 'Continue to Step 2 (Name & Photo)'}</span>
                   <ArrowRight size={14} />
                 </button>
               </form>
@@ -879,13 +988,13 @@ export const AuthModal: React.FC = () => {
               <form onSubmit={handleNextToStep3} className="space-y-3">
                 <div className="text-xs text-indigo-300 font-semibold mb-1 flex items-center gap-1.5">
                   <UserIcon size={14} />
-                  <span>Step 2: Kuzuza Amazina na Imyirondoro yawe</span>
+                  <span>{t.step2Title}</span>
                 </div>
 
                 {/* Full Name */}
                 <div>
                   <label htmlFor="reg-name" className="block text-xs font-medium text-slate-300 mb-1">
-                    Amazina yose (Full Name) <span className="text-indigo-400">*</span>
+                    {t.fullNameLabel} <span className="text-indigo-400">*</span>
                   </label>
                   <div className="relative">
                     <UserIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" size={15} />
@@ -894,7 +1003,7 @@ export const AuthModal: React.FC = () => {
                       name="name"
                       type="text"
                       autoComplete="name"
-                      placeholder="e.g. Jean Claude Munyaneza"
+                      placeholder={t.fullNamePlaceholder}
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-2 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
@@ -907,14 +1016,14 @@ export const AuthModal: React.FC = () => {
                 {/* Bio / Description */}
                 <div>
                   <label htmlFor="reg-bio" className="block text-xs font-medium text-slate-300 mb-1">
-                    Imyirondoro gufi (Bio / About You)
+                    {t.bioLabel}
                   </label>
                   <div className="relative">
                     <FileText className="absolute left-3.5 top-3 text-slate-500" size={15} />
                     <textarea
                       id="reg-bio"
                       name="bio"
-                      placeholder="Sobanura muri make icyo ukora cyangwa status yawe..."
+                      placeholder={t.bioPlaceholder}
                       value={bio}
                       onChange={(e) => setBio(e.target.value)}
                       rows={2}
@@ -923,32 +1032,126 @@ export const AuthModal: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Avatar selection */}
-                <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1.5 flex items-center justify-between">
-                    <span>Hitamo Ifoto y'umwirondoro (Profile Avatar)</span>
-                    <Camera size={13} className="text-indigo-400" />
-                  </label>
-                  <div className="flex items-center gap-3">
-                    {PRESET_AVATARS.map((url, idx) => (
-                      <button
-                        key={idx}
-                        type="button"
-                        onClick={() => setSelectedAvatar(url)}
-                        className={`relative rounded-2xl overflow-hidden p-0.5 border-2 transition-all cursor-pointer ${
-                          selectedAvatar === url
-                            ? 'border-indigo-500 scale-105 shadow-md shadow-indigo-500/30'
-                            : 'border-slate-800 hover:border-slate-600 opacity-70'
-                        }`}
-                      >
-                        <img src={url} alt={`Avatar option ${idx + 1}`} className="w-11 h-11 rounded-xl object-cover" />
-                        {selectedAvatar === url && (
-                          <div className="absolute top-0.5 right-0.5 bg-indigo-600 rounded-full p-0.5 text-white">
-                            <Check size={10} />
+                {/* Avatar selection from Device or Presets */}
+                <div className="bg-slate-950/70 border border-slate-800/90 rounded-2xl p-3 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-semibold text-slate-200 flex items-center gap-1.5">
+                      <Camera size={14} className="text-indigo-400" />
+                      <span>{t.profilePhotoLabel}</span>
+                    </label>
+                    <span className="text-[10px] text-indigo-300 font-medium bg-indigo-500/10 px-2 py-0.5 rounded-full border border-indigo-500/20">
+                      {language === 'rw' ? 'Kuri Telefone / PC' : 'From Phone / PC'}
+                    </span>
+                  </div>
+
+                  {/* Live Preview & Upload Action */}
+                  <div className="flex items-center gap-3.5">
+                    <div className="relative shrink-0">
+                      <div className="w-16 h-16 rounded-2xl overflow-hidden border-2 border-indigo-500/80 shadow-lg shadow-indigo-500/25 bg-slate-900 relative">
+                        <img
+                          src={selectedAvatar}
+                          alt="Profile preview"
+                          className="w-full h-full object-cover"
+                        />
+                        {isUploadingAvatar && (
+                          <div className="absolute inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center">
+                            <RefreshCw size={18} className="animate-spin text-indigo-400" />
                           </div>
                         )}
+                      </div>
+                      {customAvatarUploaded && (
+                        <span className="absolute -bottom-1 -right-1 bg-emerald-500 text-[9px] font-bold text-white px-1.5 py-0.2 rounded-full border border-slate-900 shadow">
+                          ✓ Device
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex-1 space-y-1.5">
+                      {/* Hidden File Input for Device Files & Camera */}
+                      <input
+                        ref={avatarFileInputRef}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleDeviceAvatarSelect}
+                      />
+
+                      <button
+                        type="button"
+                        disabled={isUploadingAvatar}
+                        onClick={() => avatarFileInputRef.current?.click()}
+                        className="w-full py-2 px-3 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 active:scale-[0.98] text-white font-medium text-xs rounded-xl shadow-md shadow-indigo-600/25 flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
+                      >
+                        {isUploadingAvatar ? (
+                          <>
+                            <RefreshCw size={13} className="animate-spin" />
+                            <span>{t.uploadingPhoto}</span>
+                          </>
+                        ) : (
+                          <>
+                            <Upload size={13} />
+                            <span>{t.chooseFromDevice}</span>
+                          </>
+                        )}
                       </button>
-                    ))}
+
+                      <p className="text-[10px] text-slate-400 leading-tight">
+                        {language === 'rw'
+                          ? 'Hitamo ifoto muri telefone yawe cyangwa mudasobwa (PNG, JPG, WebP)'
+                          : 'Select an image from your device (PNG, JPG, WebP)'}
+                      </p>
+
+                      {avatarUploadError && (
+                        <p className="text-[10px] text-rose-400 flex items-center gap-1">
+                          <AlertCircle size={11} />
+                          <span>{avatarUploadError}</span>
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Preset Avatars Fallback */}
+                  <div className="pt-2 border-t border-slate-800/60">
+                    <div className="text-[11px] text-slate-400 mb-1.5 flex items-center justify-between">
+                      <span>{t.presetAvatars}:</span>
+                      {customAvatarUploaded && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setCustomAvatarUploaded(false);
+                            setSelectedAvatar(PRESET_AVATARS[0]);
+                          }}
+                          className="text-[10px] text-indigo-400 hover:underline flex items-center gap-1 cursor-pointer"
+                        >
+                          <Trash2 size={10} />
+                          <span>{t.removePhoto}</span>
+                        </button>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2.5 overflow-x-auto pb-1">
+                      {PRESET_AVATARS.map((url, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => {
+                            setSelectedAvatar(url);
+                            setCustomAvatarUploaded(false);
+                          }}
+                          className={`relative rounded-xl overflow-hidden p-0.5 border-2 transition-all cursor-pointer shrink-0 ${
+                            selectedAvatar === url && !customAvatarUploaded
+                              ? 'border-indigo-500 scale-105 shadow-md shadow-indigo-500/30 ring-2 ring-indigo-500/40'
+                              : 'border-slate-800 hover:border-slate-600 opacity-70'
+                          }`}
+                        >
+                          <img src={url} alt={`Avatar option ${idx + 1}`} className="w-10 h-10 rounded-lg object-cover" />
+                          {selectedAvatar === url && !customAvatarUploaded && (
+                            <div className="absolute top-0.5 right-0.5 bg-indigo-600 rounded-full p-0.5 text-white">
+                              <Check size={9} />
+                            </div>
+                          )}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
 
@@ -959,14 +1162,14 @@ export const AuthModal: React.FC = () => {
                     className="px-4 py-2.5 bg-slate-950 hover:bg-slate-800 border border-slate-800 text-slate-300 text-xs font-semibold rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer"
                   >
                     <ArrowLeft size={14} />
-                    <span>Inyuma (Step 1)</span>
+                    <span>{t.back}</span>
                   </button>
 
                   <button
                     type="submit"
                     className="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-500 active:scale-[0.99] text-white font-semibold text-xs rounded-xl shadow-lg shadow-indigo-600/30 transition-all flex items-center justify-center gap-2 cursor-pointer"
                   >
-                    <span>Komeza muri Step 3 (Gukora Username)</span>
+                    <span>{language === 'rw' ? 'Komeza muri Step 3 (Username)' : 'Continue to Step 3 (Username)'}</span>
                     <ArrowRight size={14} />
                   </button>
                 </div>
@@ -978,14 +1181,14 @@ export const AuthModal: React.FC = () => {
               <form onSubmit={handleFinalRegister} className="space-y-3">
                 <div className="text-xs text-indigo-300 font-semibold mb-1 flex items-center gap-1.5">
                   <AtSign size={14} />
-                  <span>Step 3: Hitamo Username & Reba profile card yawe</span>
+                  <span>{t.step3Title}</span>
                 </div>
 
                 {/* Username handle field */}
                 <div>
                   <div className="flex items-center justify-between mb-1">
                     <label htmlFor="reg-username" className="block text-xs font-medium text-slate-300">
-                      Gukora Username (@handle) <span className="text-indigo-400">*</span>
+                      {t.usernameLabel} <span className="text-indigo-400">*</span>
                     </label>
                     <button
                       type="button"
@@ -993,7 +1196,7 @@ export const AuthModal: React.FC = () => {
                       className="text-[10px] text-indigo-400 hover:text-indigo-300 font-medium flex items-center gap-1 cursor-pointer"
                     >
                       <Sparkles size={11} />
-                      <span>Inama ya Username</span>
+                      <span>{t.suggestUsername}</span>
                     </button>
                   </div>
 
@@ -1004,30 +1207,62 @@ export const AuthModal: React.FC = () => {
                       name="username"
                       type="text"
                       autoComplete="username"
-                      placeholder="munyaneza_jc"
+                      placeholder={t.usernamePlaceholder}
                       value={username}
                       onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_.-]/g, ''))}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-20 py-2 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
+                      className={`w-full bg-slate-950 border rounded-xl pl-10 pr-24 py-2 text-xs text-white placeholder:text-slate-500 focus:outline-none transition-colors ${
+                        usernameCheck.status === 'taken'
+                          ? 'border-rose-500/70 focus:border-rose-500'
+                          : usernameCheck.status === 'available'
+                          ? 'border-emerald-500/70 focus:border-emerald-500'
+                          : 'border-slate-800 focus:border-indigo-500'
+                      }`}
                       required
                       autoFocus
                     />
-                    {username && username.length >= 2 && (
-                      <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded-md border border-emerald-500/20">
+                    {usernameCheck.status === 'checking' && (
+                      <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1 text-[10px] font-medium text-slate-400 bg-slate-900 px-2 py-0.5 rounded-md border border-slate-800">
+                        <RefreshCw size={10} className="animate-spin text-indigo-400" />
+                        <span>Verifying...</span>
+                      </div>
+                    )}
+                    {usernameCheck.status === 'available' && (
+                      <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1 text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/30">
                         <Check size={11} />
-                        <span>Available</span>
+                        <span>{language === 'rw' ? 'Riraboneka' : 'Available'}</span>
+                      </div>
+                    )}
+                    {usernameCheck.status === 'taken' && (
+                      <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1 text-[10px] font-semibold text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded-md border border-rose-500/30">
+                        <AlertCircle size={11} />
+                        <span>{language === 'rw' ? 'Ryarafashwe' : 'Taken'}</span>
                       </div>
                     )}
                   </div>
-                  <p className="text-[10px] text-slate-500 mt-1">
-                    Unique handle for messaging, calls, and discovery across the platform.
-                  </p>
+                  {usernameCheck.status === 'taken' && (
+                    <p className="text-[11px] text-rose-400 mt-1 flex items-center gap-1 font-medium">
+                      <AlertCircle size={12} className="shrink-0" />
+                      <span>{usernameCheck.message || t.usernameTaken}</span>
+                    </p>
+                  )}
+                  {usernameCheck.status === 'invalid' && (
+                    <p className="text-[11px] text-amber-400 mt-1 flex items-center gap-1">
+                      <AlertCircle size={12} className="shrink-0" />
+                      <span>{usernameCheck.message}</span>
+                    </p>
+                  )}
+                  {usernameCheck.status !== 'taken' && usernameCheck.status !== 'invalid' && (
+                    <p className="text-[10px] text-slate-500 mt-1">
+                      {t.usernameHint}
+                    </p>
+                  )}
                 </div>
 
                 {/* Member Card preview */}
                 <div className="p-3 bg-slate-950 border border-slate-800 rounded-2xl relative overflow-hidden">
                   <div className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold mb-2 flex items-center gap-1">
                     <ShieldCheck size={12} className="text-indigo-400" />
-                    <span>RUDACTIVITY Member ID Card Preview</span>
+                    <span>{t.memberCardPreview}</span>
                   </div>
 
                   <div className="flex items-center gap-3">
@@ -1038,13 +1273,13 @@ export const AuthModal: React.FC = () => {
                     />
                     <div className="min-w-0 flex-1">
                       <div className="text-xs font-bold text-white truncate">
-                        {name || 'Your Full Name'}
+                        {name || (language === 'rw' ? 'Amazina Yawe' : 'Your Full Name')}
                       </div>
                       <div className="text-[11px] font-mono text-indigo-400 truncate">
                         @{username || 'username'}
                       </div>
                       <div className="text-[10px] text-slate-400 truncate mt-0.5">
-                        {bio || 'Hey there! I am using RUDACTIVITY.'}
+                        {bio || (language === 'rw' ? 'Muraho! Ndi gukoresha E-RUDACTIVITY.' : 'Hey there! I am using E-RUDACTIVITY.')}
                       </div>
                     </div>
                   </div>
@@ -1057,22 +1292,22 @@ export const AuthModal: React.FC = () => {
                     className="px-4 py-2.5 bg-slate-950 hover:bg-slate-800 border border-slate-800 text-slate-300 text-xs font-semibold rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer"
                   >
                     <ArrowLeft size={14} />
-                    <span>Inyuma</span>
+                    <span>{t.back}</span>
                   </button>
 
                   <button
                     type="submit"
-                    disabled={isLoading}
-                    className="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-500 active:scale-[0.99] text-white font-semibold text-xs rounded-xl shadow-lg shadow-indigo-600/30 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+                    disabled={isLoading || usernameCheck.status === 'taken' || usernameCheck.status === 'checking' || !username || username.trim().length < 2}
+                    className="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-500 active:scale-[0.99] text-white font-semibold text-xs rounded-xl shadow-lg shadow-indigo-600/30 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isLoading ? (
                       <>
                         <RefreshCw size={14} className="animate-spin" />
-                        <span>Creating Account... (Irikukwandikisha...)</span>
+                        <span>{language === 'rw' ? 'Irikukwandikisha...' : 'Creating Account...'}</span>
                       </>
                     ) : (
                       <>
-                        <span>Rangiza Kwiyandikisha (Complete)</span>
+                        <span>{t.completeRegistration}</span>
                         <ArrowRight size={14} />
                       </>
                     )}
@@ -1091,12 +1326,14 @@ export const AuthModal: React.FC = () => {
             {resetStep === 1 ? (
               <form onSubmit={handleRequestResetCode} className="space-y-3">
                 <p className="text-xs text-slate-300 leading-relaxed">
-                  Enter your registered email address. We will generate a secure 6-digit verification code to reset your account password.
+                  {language === 'rw'
+                    ? 'Injiza aderesi ya email yawe wandikishije. Turakwoherereza kode y\'ibanga y\'imibare 6 yo guhindura ijambobanga.'
+                    : 'Enter your registered email address. We will generate a secure 6-digit verification code to reset your account password.'}
                 </p>
 
                 <div>
                   <label htmlFor="reset-email" className="block text-xs font-medium text-slate-300 mb-1">
-                    Email Address
+                    {t.emailLabel}
                   </label>
                   <div className="relative">
                     <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
@@ -1105,7 +1342,7 @@ export const AuthModal: React.FC = () => {
                       name="email"
                       type="email"
                       autoComplete="email"
-                      placeholder="e.g. name@example.com"
+                      placeholder={t.emailPlaceholder}
                       value={resetEmail}
                       onChange={(e) => setResetEmail(e.target.value)}
                       className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-xs sm:text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
@@ -1125,7 +1362,7 @@ export const AuthModal: React.FC = () => {
                     }}
                     className="px-4 py-2.5 bg-slate-950 hover:bg-slate-800 border border-slate-800 text-slate-300 text-xs font-semibold rounded-xl transition-colors cursor-pointer"
                   >
-                    Cancel
+                    {t.cancel}
                   </button>
 
                   <button
@@ -1136,11 +1373,11 @@ export const AuthModal: React.FC = () => {
                     {isLoading ? (
                       <>
                         <RefreshCw size={14} className="animate-spin" />
-                        <span>Sending code...</span>
+                        <span>{language === 'rw' ? 'Kode irakorerwa...' : 'Sending code...'}</span>
                       </>
                     ) : (
                       <>
-                        <span>Send Reset Code (Komeza)</span>
+                        <span>{t.sendResetCode}</span>
                         <ArrowRight size={14} />
                       </>
                     )}
@@ -1151,7 +1388,9 @@ export const AuthModal: React.FC = () => {
               <form onSubmit={handleCompletePasswordReset} className="space-y-3">
                 {codePreviewNotice && (
                   <div className="p-3 bg-indigo-950/40 border border-indigo-500/30 rounded-xl text-xs text-indigo-300">
-                    <div className="font-semibold text-white mb-0.5">Verification Code Ready:</div>
+                    <div className="font-semibold text-white mb-0.5">
+                      {language === 'rw' ? 'Kode yo guhindura iboneka hano:' : 'Verification Code Ready:'}
+                    </div>
                     <div className="font-mono text-sm tracking-widest text-indigo-200 bg-slate-950 px-2 py-1 rounded inline-block">
                       {codePreviewNotice}
                     </div>
@@ -1160,7 +1399,7 @@ export const AuthModal: React.FC = () => {
 
                 <div>
                   <label htmlFor="reset-code" className="block text-xs font-medium text-slate-300 mb-1">
-                    6-Digit Verification Code
+                    {t.enterResetCode}
                   </label>
                   <input
                     id="reset-code"
@@ -1179,7 +1418,7 @@ export const AuthModal: React.FC = () => {
                 <div>
                   <div className="flex items-center justify-between mb-1">
                     <label htmlFor="reset-new-password" className="block text-xs font-medium text-slate-300">
-                      New Password (Ijambobanga rishya)
+                      {t.newPasswordLabel}
                     </label>
                     {resetNewPassword && (
                       <span className="text-[10px] text-slate-400 font-medium">
@@ -1194,7 +1433,7 @@ export const AuthModal: React.FC = () => {
                       name="newPassword"
                       type={showResetNewPassword ? 'text' : 'password'}
                       autoComplete="new-password"
-                      placeholder="Min 8 characters (letters & numbers)"
+                      placeholder={t.passwordPlaceholder}
                       value={resetNewPassword}
                       onChange={(e) => setResetNewPassword(e.target.value)}
                       className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-10 py-2 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
@@ -1214,7 +1453,7 @@ export const AuthModal: React.FC = () => {
                 <div>
                   <div className="flex items-center justify-between mb-1">
                     <label htmlFor="reset-confirm-password" className="block text-xs font-medium text-slate-300">
-                      Confirm New Password
+                      {t.confirmPasswordLabel}
                     </label>
                     {resetConfirmPassword && (
                       <span
@@ -1225,10 +1464,10 @@ export const AuthModal: React.FC = () => {
                         {passwordsMatch ? (
                           <>
                             <Check size={11} />
-                            <span>Match</span>
+                            <span>{language === 'rw' ? 'Birasana' : 'Match'}</span>
                           </>
                         ) : (
-                          <span>Do not match</span>
+                          <span>{language === 'rw' ? 'Binyuranye' : 'Do not match'}</span>
                         )}
                       </span>
                     )}
@@ -1240,7 +1479,7 @@ export const AuthModal: React.FC = () => {
                       name="confirmPassword"
                       type={showResetConfirmPassword ? 'text' : 'password'}
                       autoComplete="new-password"
-                      placeholder="Re-enter your new password"
+                      placeholder={t.confirmPasswordPlaceholder}
                       value={resetConfirmPassword}
                       onChange={(e) => setResetConfirmPassword(e.target.value)}
                       className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-10 py-2 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
@@ -1263,7 +1502,7 @@ export const AuthModal: React.FC = () => {
                     onClick={() => setResetStep(1)}
                     className="px-4 py-2.5 bg-slate-950 hover:bg-slate-800 border border-slate-800 text-slate-300 text-xs font-semibold rounded-xl transition-colors cursor-pointer"
                   >
-                    Back
+                    {t.back}
                   </button>
 
                   <button
@@ -1274,11 +1513,11 @@ export const AuthModal: React.FC = () => {
                     {isLoading ? (
                       <>
                         <RefreshCw size={14} className="animate-spin" />
-                        <span>Resetting...</span>
+                        <span>{t.saving}</span>
                       </>
                     ) : (
                       <>
-                        <span>Reset Password & Sign In</span>
+                        <span>{t.resetPassword}</span>
                         <ArrowRight size={14} />
                       </>
                     )}
