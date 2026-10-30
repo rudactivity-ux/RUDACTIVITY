@@ -18,7 +18,8 @@ import {
   MoreVertical,
   LogOut,
   UserCheck,
-  Zap
+  Zap,
+  Bookmark
 } from 'lucide-react';
 import { Conversation } from '../../types/index.ts';
 import { PWAInstallButton } from '../pwa/PWAInstallButton.tsx';
@@ -93,9 +94,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className="flex items-center gap-2.5">
           <div className="relative cursor-pointer" onClick={() => setShowUserMenu(!showUserMenu)}>
             <img
-              src="/src/assets/images/rudactivity_logo_1793024816643.jpg"
+              src="/src/assets/images/erudactivity_logo.jpg"
               alt="E-RUDACTIVITY"
-              className="w-9 h-9 rounded-xl object-cover ring-1 ring-indigo-500/30 shadow-md"
+              className="w-9 h-9 rounded-xl object-cover ring-1 ring-cyan-500/40 shadow-md shadow-cyan-500/10"
             />
             {user?.isOnline && (
               <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 rounded-full ring-2 ring-slate-900" />
@@ -246,6 +247,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
           filteredConversations.map((conv) => {
             const isSelected = conv.id === activeConversationId;
             const hasUnread = (conv.unreadCount || 0) > 0;
+            const isSaved = conv.isSavedMessages || conv.id.startsWith('conv_saved_');
+            const displayTitle = isSaved
+              ? (language === 'rw' ? 'Ubutumwa Bwanjye' : 'Saved Messages')
+              : conv.title;
 
             return (
               <div
@@ -263,28 +268,34 @@ export const Sidebar: React.FC<SidebarProps> = ({
               >
                 {/* Avatar with badge */}
                 <div className="relative shrink-0">
-                  <img
-                    src={
-                      conv.avatar ||
-                      (conv.type === 'channel'
-                        ? '/src/assets/images/channel_cover_tech_1793024818739.jpg'
-                        : '/src/assets/images/rudactivity_logo_1793024816643.jpg')
-                    }
-                    alt={conv.title}
-                    className="w-11 h-11 rounded-full object-cover ring-1 ring-slate-800"
-                    onError={(e) => {
-                      (e.target as HTMLElement).style.display = 'none';
-                    }}
-                  />
-                  {conv.type === 'direct' && conv.otherUser?.isOnline && (
+                  {isSaved ? (
+                    <div className="w-11 h-11 rounded-full bg-gradient-to-tr from-sky-500 to-blue-600 flex items-center justify-center text-white ring-1 ring-sky-400/40 shadow-sm">
+                      <Bookmark size={20} className="fill-white/30" />
+                    </div>
+                  ) : (
+                    <img
+                      src={
+                        conv.avatar ||
+                        (conv.type === 'channel'
+                          ? '/src/assets/images/channel_cover_tech_1793024818739.jpg'
+                          : '/src/assets/images/rudactivity_logo_1793024816643.jpg')
+                      }
+                      alt={displayTitle}
+                      className="w-11 h-11 rounded-full object-cover ring-1 ring-slate-800"
+                      onError={(e) => {
+                        (e.target as HTMLElement).style.display = 'none';
+                      }}
+                    />
+                  )}
+                  {!isSaved && conv.type === 'direct' && conv.otherUser?.isOnline && (
                     <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 rounded-full ring-2 ring-slate-900" />
                   )}
-                  {conv.type === 'channel' && (
+                  {!isSaved && conv.type === 'channel' && (
                     <span className="absolute -bottom-1 -right-1 bg-indigo-600 p-0.5 rounded-full text-white ring-2 ring-slate-900">
                       <Radio size={9} />
                     </span>
                   )}
-                  {conv.type === 'group' && (
+                  {!isSaved && conv.type === 'group' && (
                     <span className="absolute -bottom-1 -right-1 bg-purple-600 p-0.5 rounded-full text-white ring-2 ring-slate-900">
                       <Users size={9} />
                     </span>
@@ -294,8 +305,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 {/* Content */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-0.5">
-                    <h4 className="text-xs font-semibold text-white truncate max-w-[160px]">
-                      {conv.title}
+                    <h4 className="text-xs font-semibold text-white truncate max-w-[160px] flex items-center gap-1.5">
+                      <span>{displayTitle}</span>
+                      {isSaved && (
+                        <span className="text-[10px] px-1.5 py-0.2 rounded bg-sky-500/20 text-sky-300 font-normal">
+                          Cloud
+                        </span>
+                      )}
                     </h4>
                     <span className="text-[10px] text-slate-500 font-mono tabular-nums">
                       {formatTime(conv.lastMessage?.createdAt || conv.updatedAt)}

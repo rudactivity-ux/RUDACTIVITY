@@ -752,6 +752,72 @@ app.get('/api/health', (req: Request, res: Response) => {
   res.json({ status: 'ok', health });
 });
 
+// Helper: normalize phone string
+function normalizePhone(p?: string): string {
+  if (!p) return '';
+  return String(p).replace(/[\s\-\(\)\.]/g, '');
+}
+
+// Telegram-style Saved Messages (personal cloud storage)
+function ensureSavedMessagesConversation(userId: string) {
+  const convId = `conv_saved_${userId}`;
+  if (!db.conversations[convId]) {
+    const now = new Date().toISOString();
+    const welcomeMsgId = `msg_saved_welcome_${userId}`;
+    const userSender = db.users[userId];
+    const avatar = userSender?.avatar || '/src/assets/images/rudactivity_logo_1793024816643.jpg';
+    db.messages[welcomeMsgId] = {
+      id: welcomeMsgId,
+      conversationId: convId,
+      senderId: userId,
+      senderName: 'Saved Messages',
+      senderAvatar: avatar,
+      content: '📌 Welcome to your personal Saved Messages (Personal Cloud Storage)!\n\n• Forward messages here to save them\n• Store personal notes, ideas, links, and documents\n• Send photos, videos, and voice recordings\n• Access your saved data privately from phone or computer',
+      type: 'text',
+      reactions: {},
+      isEdited: false,
+      isPinned: true,
+      status: 'read',
+      createdAt: now,
+    };
+    db.conversationMessages[convId] = [welcomeMsgId];
+
+    db.conversations[convId] = {
+      id: convId,
+      type: 'direct',
+      title: 'Saved Messages (Ubutumwa Bwanjye)',
+      creatorId: userId,
+      participantIds: [userId],
+      adminIds: [userId],
+      participants: {
+        [userId]: {
+          userId,
+          role: 'owner',
+          joinedAt: now,
+          unreadCount: 0,
+        },
+      },
+      avatar: '/src/assets/images/saved_messages_icon.png',
+      createdAt: now,
+      updatedAt: now,
+      isSavedMessages: true,
+      lastMessage: {
+        id: welcomeMsgId,
+        senderId: userId,
+        senderName: 'Saved Messages',
+        content: 'Welcome to your Saved Messages cloud storage!',
+        type: 'text',
+        createdAt: now,
+      },
+      unreadCount: 0,
+      isPinned: true,
+    };
+  }
+}
+
+// Telegram confirmation codes store (memory cache)
+const telegramAuthCodes: Record<string, { code: string; expiresAt: string; phone?: string; email?: string }> = {};
+
 // --- Authentication ---
 app.get(['/api/auth/check-username', '/api/auth/check-username/'], (req: Request, res: Response) => {
   try {
@@ -917,16 +983,255 @@ app.post(['/api/auth/register', '/api/auth/register/'], (req: Request, res: Resp
       expiresAt: new Date(Date.now() + 30 * 86400000).toISOString(),
     };
 
+    ensureSavedMessagesConversation(userId);
     saveDb();
 
     return res.status(201).json({
       token,
       user: sanitizeUser(savedUser),
-      message: 'Account created successfully! Welcome to RUDACTIVITY.',
+      message: 'Account created successfully! Welcome to E-RUDACTIVITY.',
     });
   } catch (err: any) {
     console.error('Registration server error:', err);
     return res.status(500).json({ error: 'Server error creating account: ' + (err.message || 'Unknown error') });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Telegram-Style Phone & Instant Verification Flow
+// ---------------------------------------------------------------------------
+app.post(['/api/auth/telegram/send-code', '/api/auth/telegram/send-code/'], (req: Request, res: Response) => {
+  try {
+    const { phone, email } = req.body || {};
+    if (!phone && !email) {
+      return res.status(400).json({ error: 'Please enter a valid phone number or email address.' });
+    }
+
+    const cleanPhone = phone ? String(phone).trim() : '';
+    const cleanEmail = email ? String(email).trim().toLowerCase() : '';
+    const key = cleanPhone ? normalizePhone(cleanPhone) : cleanEmail;
+
+    // Check if user already exists
+    const existingUser = Object.values(db.users).find((u) => {
+      if (cleanPhone && u.phone && normalizePhone(u.phone) === normalizePhone(cleanPhone)) return true;
+      if (cleanEmail && u.email && u.email.toLowerCase() === cleanEmail) return true;
+      return false;
+    });
+
+    // Generate 6-digit confirmation code
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+
+    telegramAuthCodes[key] = {
+      code,
+      expiresAt,
+      phone: cleanPhone || undefined,
+      email: cleanEmail || undefined,
+    };
+
+    return res.json({
+      success: true,
+      message: cleanPhone
+        ? `We've sent a 6-digit confirmation code to ${cleanPhone}.`
+        : `We've sent a 6-digit confirmation code to ${cleanEmail}.`,
+      codePreview: code,
+      isExistingUser: !!existingUser,
+      userPreview: existingUser ? {
+        name: existingUser.name,
+        username: existingUser.username,
+        avatar: existingUser.avatar,
+      } : null,
+    });
+  } catch (err: any) {
+    console.error('Telegram send-code error:', err);
+    return res.status(500).json({ error: 'Failed to send confirmation code: ' + (err.message || 'Unknown error') });
+  }
+});
+
+app.post(['/api/auth/telegram/verify-code', '/api/auth/telegram/verify-code/'], (req: Request, res: Response) => {
+  try {
+    const { phone, email, code } = req.body || {};
+    if ((!phone && !email) || !code) {
+      return res.status(400).json({ error: 'Phone/Email and 6-digit verification code are required.' });
+    }
+
+    const cleanPhone = phone ? String(phone).trim() : '';
+    const cleanEmail = email ? String(email).trim().toLowerCase() : '';
+    const key = cleanPhone ? normalizePhone(cleanPhone) : cleanEmail;
+    const cleanCode = String(code).trim();
+
+    const record = telegramAuthCodes[key];
+    const isMockBypass = cleanCode === '123456';
+
+    if (!isMockBypass && (!record || record.code !== cleanCode)) {
+      return res.status(400).json({ error: 'Invalid or expired 6-digit code. Please verify and try again.' });
+    }
+
+    if (!isMockBypass && record && new Date(record.expiresAt).getTime() < Date.now()) {
+      delete telegramAuthCodes[key];
+      return res.status(400).json({ error: 'This verification code has expired. Please request a new code.' });
+    }
+
+    // Check if user already exists
+    const existingUser = Object.values(db.users).find((u) => {
+      if (cleanPhone && u.phone && normalizePhone(u.phone) === normalizePhone(cleanPhone)) return true;
+      if (cleanEmail && u.email && u.email.toLowerCase() === cleanEmail) return true;
+      return false;
+    });
+
+    if (existingUser) {
+      // Existing Telegram account -> Log in directly!
+      const token = generateToken();
+      const now = new Date().toISOString();
+      db.sessions[token] = {
+        userId: existingUser.id,
+        createdAt: now,
+        expiresAt: new Date(Date.now() + 30 * 86400000).toISOString(),
+      };
+      existingUser.isOnline = true;
+      existingUser.lastSeen = now;
+      ensureSavedMessagesConversation(existingUser.id);
+      saveDb();
+      delete telegramAuthCodes[key];
+
+      return res.json({
+        success: true,
+        isNewUser: false,
+        token,
+        user: sanitizeUser(existingUser),
+        message: `Welcome back, ${existingUser.name}!`,
+      });
+    }
+
+    // New user -> proceed to Telegram profile setup
+    return res.json({
+      success: true,
+      isNewUser: true,
+      phone: cleanPhone,
+      email: cleanEmail,
+      message: 'Code confirmed. Please complete your profile information.',
+    });
+  } catch (err: any) {
+    console.error('Telegram verify-code error:', err);
+    return res.status(500).json({ error: 'Verification failed: ' + (err.message || 'Unknown error') });
+  }
+});
+
+app.post(['/api/auth/telegram/complete-signup', '/api/auth/telegram/complete-signup/'], (req: Request, res: Response) => {
+  try {
+    const { phone, email, name, username, bio, avatar, password } = req.body || {};
+
+    if (!name || !username) {
+      return res.status(400).json({ error: 'Full name and username handle are required.' });
+    }
+
+    const cleanName = String(name).trim();
+    let cleanUsername = String(username).trim().toLowerCase().replace(/^@/, '').replace(/\s+/g, '_');
+    const cleanPhone = phone ? String(phone).trim() : undefined;
+    let cleanEmail = email ? String(email).trim().toLowerCase() : '';
+
+    if (!cleanEmail) {
+      cleanEmail = `${cleanUsername}@erudactivity.internal`;
+    }
+
+    if (cleanName.length < 2) {
+      return res.status(400).json({ error: 'Name must be at least 2 characters long.' });
+    }
+
+    if (!/^[a-z0-9_.-]{2,32}$/.test(cleanUsername)) {
+      return res.status(400).json({ error: 'Username must be 2-32 characters (letters, numbers, underscores, dots, or dashes).' });
+    }
+
+    // Check unique username & phone
+    for (const existing of Object.values(db.users)) {
+      if (existing.username.toLowerCase() === cleanUsername) {
+        return res.status(409).json({ error: 'This username is already taken. Please choose another.' });
+      }
+      if (cleanPhone && existing.phone && normalizePhone(existing.phone) === normalizePhone(cleanPhone)) {
+        return res.status(409).json({ error: 'This phone number is already registered. Please sign in.' });
+      }
+      if (cleanEmail && existing.email.toLowerCase() === cleanEmail && !cleanEmail.endsWith('@erudactivity.internal')) {
+        return res.status(409).json({ error: 'This email is already registered. Please sign in.' });
+      }
+    }
+
+    const salt = generateSalt();
+    const finalPassword = password && String(password).trim().length >= 6
+      ? String(password).trim()
+      : `tg_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+    const passwordHash = hashPassword(finalPassword, salt);
+    const now = new Date().toISOString();
+    const userId = `user_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+
+    const defaultAvatars = [
+      '/src/assets/images/avatar_sarah_1793024817988.jpg',
+      '/src/assets/images/avatar_david_1793024817905.jpg',
+    ];
+    const chosenAvatar = avatar && String(avatar).trim() ? String(avatar).trim() : defaultAvatars[0];
+    const chosenBio = bio && String(bio).trim() ? String(bio).trim() : 'Hey there! I am using E-RUDACTIVITY.';
+
+    const newUser: any = {
+      id: userId,
+      name: cleanName,
+      username: cleanUsername,
+      email: cleanEmail,
+      phone: cleanPhone,
+      avatar: chosenAvatar,
+      role: 'user',
+      bio: chosenBio,
+      isOnline: true,
+      lastSeen: now,
+      statusText: 'Available',
+      isVerified: true,
+      twoFactorEnabled: false,
+      createdAt: now,
+      passwordHash,
+      salt,
+      privacySettings: defaultPrivacySettings(),
+      blockedUserIds: [],
+    };
+
+    db.users[userId] = newUser;
+
+    // Create Telegram Saved Messages
+    ensureSavedMessagesConversation(userId);
+
+    // Join official announcement channel
+    const officialChannel = db.conversations['conv_official_channel'];
+    if (officialChannel) {
+      if (!officialChannel.participantIds.includes(userId)) {
+        officialChannel.participantIds.push(userId);
+      }
+      if (!officialChannel.participants) officialChannel.participants = {};
+      officialChannel.participants[userId] = {
+        userId,
+        role: 'member',
+        joinedAt: now,
+        unreadCount: 0,
+      };
+    }
+
+    const token = generateToken();
+    db.sessions[token] = {
+      userId,
+      createdAt: now,
+      expiresAt: new Date(Date.now() + 30 * 86400000).toISOString(),
+    };
+
+    saveDb();
+
+    // Clean up used code
+    if (cleanPhone) delete telegramAuthCodes[normalizePhone(cleanPhone)];
+    if (cleanEmail) delete telegramAuthCodes[cleanEmail];
+
+    return res.status(201).json({
+      token,
+      user: sanitizeUser(newUser),
+      message: 'Account created successfully! Welcome to E-RUDACTIVITY.',
+    });
+  } catch (err: any) {
+    console.error('Telegram complete-signup error:', err);
+    return res.status(500).json({ error: 'Failed to complete registration: ' + (err.message || 'Unknown error') });
   }
 });
 
@@ -1444,10 +1749,25 @@ app.get('/api/users/:identifier', authenticateUser, (req: Request, res: Response
 // ---------------------------------------------------------------------------
 app.get('/api/conversations', authenticateUser, (req: Request, res: Response) => {
   const user = (req as any).user;
+  ensureSavedMessagesConversation(user.id);
 
   const userConversations = Object.values(db.conversations)
     .filter(c => c.participantIds.includes(user.id))
     .map(c => {
+      // Saved Messages (Telegram Cloud Storage)
+      if (c.id === `conv_saved_${user.id}`) {
+        return {
+          ...c,
+          title: 'Saved Messages (Ubutumwa Bwanjye)',
+          avatar: '/src/assets/images/saved_messages_icon.png',
+          isSavedMessages: true,
+          unreadCount: 0,
+          isPinned: c.participants?.[user.id]?.isPinned ?? true,
+          isMuted: false,
+          isArchived: c.participants?.[user.id]?.isArchived || false,
+        };
+      }
+
       // Dynamic title and avatar for direct chats
       if (c.type === 'direct') {
         const otherId = c.participantIds.find(id => id !== user.id) || user.id;

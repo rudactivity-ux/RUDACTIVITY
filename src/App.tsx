@@ -44,9 +44,9 @@ function MainLayout() {
     return (
       <div className="h-full w-full flex flex-col items-center justify-center bg-slate-950 text-white gap-4">
         <img
-          src="/src/assets/images/rudactivity_logo_1793024816643.jpg"
+          src="/src/assets/images/erudactivity_logo.jpg"
           alt="E-RUDACTIVITY"
-          className="w-16 h-16 rounded-2xl animate-pulse ring-2 ring-indigo-500/30 object-cover"
+          className="w-16 h-16 rounded-2xl animate-pulse ring-2 ring-cyan-500/40 shadow-xl shadow-cyan-500/20 object-cover"
         />
         <div className="flex items-center gap-2 text-xs font-mono text-indigo-400">
           <span>{t.connecting}</span>

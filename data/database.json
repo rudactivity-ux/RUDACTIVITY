@@ -15,8 +15,8 @@
       "isVerified": true,
       "twoFactorEnabled": false,
       "createdAt": "2026-10-26T14:38:20.640Z",
-      "passwordHash": "b4bff85d21b29603326a916da3165fe7d23790c08d75aae8dbd65ffb5e31da6a702865f3d1eab21d931e8ccfba73fcd0d34da3e255f0d97e2ffd2d0957b372f9",
-      "salt": "cd029c300a38a7b71d5727444dd096b5",
+      "passwordHash": "dd23418e5c96b3b50ef00e3b87d6a30c95b479ee7cf467eb7b3d6442e19cd74b8a832e97a0bac2d702df89e6167fda747755ed7e9c5645011c4ed63a6436237f",
+      "salt": "a30b9392df79b34a652dcc083072a191",
       "privacySettings": {
         "lastSeenVisibility": "everyone",
         "profilePhotoVisibility": "everyone",
@@ -166,7 +166,7 @@
       "role": "user",
       "bio": "Hey there! I am using RUDACTIVITY.",
       "isOnline": true,
-      "lastSeen": "2026-10-28T17:14:21.563Z",
+      "lastSeen": "2026-10-30T16:20:28.134Z",
       "statusText": "Available",
       "isVerified": true,
       "twoFactorEnabled": false,
@@ -236,21 +236,21 @@
     },
     "user_1793211147340_f3ay": {
       "id": "user_1793211147340_f3ay",
-      "name": "RUDA CTIVITY.",
+      "name": "RUDA CTIVITY",
       "username": "rudactivity",
       "email": "rudactivity@gmail.com",
       "avatar": "/src/assets/images/avatar_sarah_1793024817988.jpg",
       "role": "user",
       "bio": "Hey there! I am using RUDACTIVITY.",
       "isOnline": true,
-      "lastSeen": "2026-10-29T10:21:13.182Z",
+      "lastSeen": "2026-10-30T16:08:31.239Z",
       "statusText": "Available",
       "isVerified": true,
       "twoFactorEnabled": false,
       "googleId": "google_1793267160083",
       "createdAt": "2026-10-28T18:12:27.340Z",
-      "passwordHash": "518ea90f6c4647b243fa5d74445200d632a84e14bb90295c8e2c2d2674ce737cc07335cd1e447b397c7ff6a9a1b516d19a34e88bfe97b978e00d844581a9d154",
-      "salt": "99ecc1b01576a955d379bbf6f2d057bf",
+      "passwordHash": "d59bd30b67891145bcd96b4c394abffdcad79b3c07391d488f1ac55bb4774d3b6a8d65ade4803d4dcfde108ef24aa4fe2aaa5af53bd89cd40b9ef7a09bf100e6",
+      "salt": "bd82ff0950cc2ef806fbada37e9e8f8a",
       "privacySettings": {
         "lastSeenVisibility": "everyone",
         "profilePhotoVisibility": "everyone",
@@ -259,7 +259,7 @@
         "whoCanAddToGroups": "everyone"
       },
       "blockedUserIds": [],
-      "phone": "+250 788 123 456"
+      "phone": "+250788123456"
     },
     "user_1793265707263_u3q1": {
       "id": "user_1793265707263_u3q1",
@@ -304,6 +304,57 @@
       "createdAt": "2026-10-29T09:47:35.232Z",
       "passwordHash": "6e33265ec7c11916c07646ffe33223bcfb9572e17e811ccde75b113f1528c3a7c839700979914587c6025d58780ddc2eb41d5f5497183203652aa7f8668b95d1",
       "salt": "baf76e5415a8198853400bbbf397219a",
+      "privacySettings": {
+        "lastSeenVisibility": "everyone",
+        "profilePhotoVisibility": "everyone",
+        "whoCanCallMe": "everyone",
+        "readReceipts": true,
+        "whoCanAddToGroups": "everyone"
+      },
+      "blockedUserIds": []
+    },
+    "user_1793377242177_y5i7": {
+      "id": "user_1793377242177_y5i7",
+      "name": "Aline Uwase",
+      "username": "aline_2026",
+      "email": "aline_2026@erudactivity.internal",
+      "phone": "+250789999888",
+      "avatar": "/src/assets/images/avatar_sarah_1793024817988.jpg",
+      "role": "user",
+      "bio": "Living life with gratitude",
+      "isOnline": true,
+      "lastSeen": "2026-10-30T16:20:42.177Z",
+      "statusText": "Available",
+      "isVerified": true,
+      "twoFactorEnabled": false,
+      "createdAt": "2026-10-30T16:20:42.177Z",
+      "passwordHash": "4ad812e94168748401e23daae6b3fb8f4ac5d2f4aafcd022a3a69ce4d07829f040a41e429187d0a9d58c33ba54dc52c37ac4ddf085f151fdc5cf4d9b866383d0",
+      "salt": "09ca30e6719139282ad059687a7f0169",
+      "privacySettings": {
+        "lastSeenVisibility": "everyone",
+        "profilePhotoVisibility": "everyone",
+        "whoCanCallMe": "everyone",
+        "readReceipts": true,
+        "whoCanAddToGroups": "everyone"
+      },
+      "blockedUserIds": []
+    },
+    "user_1793377280819_er2k": {
+      "id": "user_1793377280819_er2k",
+      "name": "Eric Mugisha",
+      "username": "eric_mugisha26",
+      "email": "eric26@erudactivity.rw",
+      "avatar": "/src/assets/images/avatar_sarah_1793024817988.jpg",
+      "role": "user",
+      "bio": "Hey there! I am using RUDACTIVITY.",
+      "isOnline": true,
+      "lastSeen": "2026-10-30T16:21:20.819Z",
+      "statusText": "Available",
+      "isVerified": true,
+      "twoFactorEnabled": false,
+      "createdAt": "2026-10-30T16:21:20.819Z",
+      "passwordHash": "4104e9a67dbf34d1e1dc36254934ffb41e252456996efaf45f25341f8f7f3c875af00589872fe39d618b2b68f87ac3a2f2e8cdc49b5b11e89205590a183cc31d",
+      "salt": "c4585dba7635bee4c63bc2bc2182035e",
       "privacySettings": {
         "lastSeenVisibility": "everyone",
         "profilePhotoVisibility": "everyone",
@@ -409,6 +460,26 @@
       "userId": "user_1793211147340_f3ay",
       "createdAt": "2026-10-29T10:21:13.182Z",
       "expiresAt": "2026-11-28T10:21:13.182Z"
+    },
+    "b773d0072fc113ab5998847ac4b374646e8f5108119c7d7196c5fd12130565ee": {
+      "userId": "user_1793211147340_f3ay",
+      "createdAt": "2026-10-30T16:08:31.239Z",
+      "expiresAt": "2026-11-29T16:08:31.239Z"
+    },
+    "0eec76b35bdffcc73754b5d03fdb0098fe7d86f990eda447da970407d41b3768": {
+      "userId": "user_1793207661564_eeb8",
+      "createdAt": "2026-10-30T16:20:28.134Z",
+      "expiresAt": "2026-11-29T16:20:28.134Z"
+    },
+    "f05c32d78c20fa4f8b08a8aad9f02cfa6b2c9c54734b8f6af5c0e667eb0f83cc": {
+      "userId": "user_1793377242177_y5i7",
+      "createdAt": "2026-10-30T16:20:42.177Z",
+      "expiresAt": "2026-11-29T16:20:42.178Z"
+    },
+    "a7a1dd9add94c15d08c67f65b9eecd8d88522e8317128ba7a3d5efa748056228": {
+      "userId": "user_1793377280819_er2k",
+      "createdAt": "2026-10-30T16:21:20.819Z",
+      "expiresAt": "2026-11-29T16:21:20.819Z"
     }
   },
   "conversations": {
@@ -433,7 +504,9 @@
         "user_1793210577319_vlxd",
         "user_1793211147340_f3ay",
         "user_1793265707263_u3q1",
-        "user_1793267255232_lsau"
+        "user_1793267255232_lsau",
+        "user_1793377242177_y5i7",
+        "user_1793377280819_er2k"
       ],
       "adminIds": [
         "user_admin",
@@ -497,7 +570,7 @@
         "user_1793211147340_f3ay": {
           "userId": "user_1793211147340_f3ay",
           "role": "member",
-          "joinedAt": "2026-10-29T10:21:05.237Z",
+          "joinedAt": "2026-10-30T16:08:31.239Z",
           "unreadCount": 0
         },
         "user_1793265707263_u3q1": {
@@ -510,6 +583,18 @@
           "userId": "user_1793267255232_lsau",
           "role": "member",
           "joinedAt": "2026-10-29T09:47:35.232Z",
+          "unreadCount": 0
+        },
+        "user_1793377242177_y5i7": {
+          "userId": "user_1793377242177_y5i7",
+          "role": "member",
+          "joinedAt": "2026-10-30T16:20:42.177Z",
+          "unreadCount": 0
+        },
+        "user_1793377280819_er2k": {
+          "userId": "user_1793377280819_er2k",
+          "role": "member",
+          "joinedAt": "2026-10-30T16:21:20.819Z",
           "unreadCount": 0
         }
       },
@@ -676,6 +761,108 @@
         "type": "image",
         "createdAt": "2026-10-29T09:47:17.158Z"
       }
+    },
+    "conv_saved_user_1793207661564_eeb8": {
+      "id": "conv_saved_user_1793207661564_eeb8",
+      "type": "direct",
+      "title": "Saved Messages (Ubutumwa Bwanjye)",
+      "creatorId": "user_1793207661564_eeb8",
+      "participantIds": [
+        "user_1793207661564_eeb8"
+      ],
+      "adminIds": [
+        "user_1793207661564_eeb8"
+      ],
+      "participants": {
+        "user_1793207661564_eeb8": {
+          "userId": "user_1793207661564_eeb8",
+          "role": "owner",
+          "joinedAt": "2026-10-30T16:20:28.135Z",
+          "unreadCount": 0
+        }
+      },
+      "avatar": "/src/assets/images/saved_messages_icon.png",
+      "createdAt": "2026-10-30T16:20:28.135Z",
+      "updatedAt": "2026-10-30T16:20:28.135Z",
+      "isSavedMessages": true,
+      "lastMessage": {
+        "id": "msg_saved_welcome_user_1793207661564_eeb8",
+        "senderId": "user_1793207661564_eeb8",
+        "senderName": "Saved Messages",
+        "content": "Welcome to your Saved Messages cloud storage!",
+        "type": "text",
+        "createdAt": "2026-10-30T16:20:28.135Z"
+      },
+      "unreadCount": 0,
+      "isPinned": true
+    },
+    "conv_saved_user_1793377242177_y5i7": {
+      "id": "conv_saved_user_1793377242177_y5i7",
+      "type": "direct",
+      "title": "Saved Messages (Ubutumwa Bwanjye)",
+      "creatorId": "user_1793377242177_y5i7",
+      "participantIds": [
+        "user_1793377242177_y5i7"
+      ],
+      "adminIds": [
+        "user_1793377242177_y5i7"
+      ],
+      "participants": {
+        "user_1793377242177_y5i7": {
+          "userId": "user_1793377242177_y5i7",
+          "role": "owner",
+          "joinedAt": "2026-10-30T16:20:42.178Z",
+          "unreadCount": 0
+        }
+      },
+      "avatar": "/src/assets/images/saved_messages_icon.png",
+      "createdAt": "2026-10-30T16:20:42.178Z",
+      "updatedAt": "2026-10-30T16:21:12.164Z",
+      "isSavedMessages": true,
+      "lastMessage": {
+        "id": "msg_1793377272164_d25i7",
+        "senderId": "user_1793377242177_y5i7",
+        "senderName": "Aline Uwase",
+        "content": "My Telegram Cloud secret note: project is working perfectly!",
+        "type": "text",
+        "createdAt": "2026-10-30T16:21:12.164Z"
+      },
+      "unreadCount": 0,
+      "isPinned": true
+    },
+    "conv_saved_user_1793377280819_er2k": {
+      "id": "conv_saved_user_1793377280819_er2k",
+      "type": "direct",
+      "title": "Saved Messages (Ubutumwa Bwanjye)",
+      "creatorId": "user_1793377280819_er2k",
+      "participantIds": [
+        "user_1793377280819_er2k"
+      ],
+      "adminIds": [
+        "user_1793377280819_er2k"
+      ],
+      "participants": {
+        "user_1793377280819_er2k": {
+          "userId": "user_1793377280819_er2k",
+          "role": "owner",
+          "joinedAt": "2026-10-30T16:21:20.819Z",
+          "unreadCount": 0
+        }
+      },
+      "avatar": "/src/assets/images/saved_messages_icon.png",
+      "createdAt": "2026-10-30T16:21:20.819Z",
+      "updatedAt": "2026-10-30T16:21:20.819Z",
+      "isSavedMessages": true,
+      "lastMessage": {
+        "id": "msg_saved_welcome_user_1793377280819_er2k",
+        "senderId": "user_1793377280819_er2k",
+        "senderName": "Saved Messages",
+        "content": "Welcome to your Saved Messages cloud storage!",
+        "type": "text",
+        "createdAt": "2026-10-30T16:21:20.819Z"
+      },
+      "unreadCount": 0,
+      "isPinned": true
     }
   },
   "messages": {
@@ -784,6 +971,63 @@
       "isPinned": false,
       "status": "sent",
       "createdAt": "2026-10-29T09:46:42.775Z"
+    },
+    "msg_saved_welcome_user_1793207661564_eeb8": {
+      "id": "msg_saved_welcome_user_1793207661564_eeb8",
+      "conversationId": "conv_saved_user_1793207661564_eeb8",
+      "senderId": "user_1793207661564_eeb8",
+      "senderName": "Saved Messages",
+      "senderAvatar": "/src/assets/images/avatar_david_1793024817905.jpg",
+      "content": "📌 Welcome to your personal Saved Messages (Telegram Cloud Storage)!\n\n• Forward messages here to save them\n• Store personal notes, ideas, links, and documents\n• Send photos, videos, and voice recordings\n• Access your saved data privately from phone or computer",
+      "type": "text",
+      "reactions": {},
+      "isEdited": false,
+      "isPinned": true,
+      "status": "read",
+      "createdAt": "2026-10-30T16:20:28.135Z"
+    },
+    "msg_saved_welcome_user_1793377242177_y5i7": {
+      "id": "msg_saved_welcome_user_1793377242177_y5i7",
+      "conversationId": "conv_saved_user_1793377242177_y5i7",
+      "senderId": "user_1793377242177_y5i7",
+      "senderName": "Saved Messages",
+      "senderAvatar": "/src/assets/images/avatar_sarah_1793024817988.jpg",
+      "content": "📌 Welcome to your personal Saved Messages (Telegram Cloud Storage)!\n\n• Forward messages here to save them\n• Store personal notes, ideas, links, and documents\n• Send photos, videos, and voice recordings\n• Access your saved data privately from phone or computer",
+      "type": "text",
+      "reactions": {},
+      "isEdited": false,
+      "isPinned": true,
+      "status": "read",
+      "createdAt": "2026-10-30T16:20:42.178Z"
+    },
+    "msg_1793377272164_d25i7": {
+      "id": "msg_1793377272164_d25i7",
+      "conversationId": "conv_saved_user_1793377242177_y5i7",
+      "senderId": "user_1793377242177_y5i7",
+      "senderName": "Aline Uwase",
+      "senderAvatar": "/src/assets/images/avatar_sarah_1793024817988.jpg",
+      "content": "My Telegram Cloud secret note: project is working perfectly!",
+      "type": "text",
+      "attachments": [],
+      "reactions": {},
+      "isEdited": false,
+      "isPinned": false,
+      "status": "sent",
+      "createdAt": "2026-10-30T16:21:12.164Z"
+    },
+    "msg_saved_welcome_user_1793377280819_er2k": {
+      "id": "msg_saved_welcome_user_1793377280819_er2k",
+      "conversationId": "conv_saved_user_1793377280819_er2k",
+      "senderId": "user_1793377280819_er2k",
+      "senderName": "Saved Messages",
+      "senderAvatar": "/src/assets/images/avatar_sarah_1793024817988.jpg",
+      "content": "📌 Welcome to your personal Saved Messages (Telegram Cloud Storage)!\n\n• Forward messages here to save them\n• Store personal notes, ideas, links, and documents\n• Send photos, videos, and voice recordings\n• Access your saved data privately from phone or computer",
+      "type": "text",
+      "reactions": {},
+      "isEdited": false,
+      "isPinned": true,
+      "status": "read",
+      "createdAt": "2026-10-30T16:21:20.819Z"
     }
   },
   "conversationMessages": {
@@ -801,6 +1045,16 @@
     "conv_dm_1793202904424_dtx6": [],
     "conv_dm_1793267195760_vob5": [
       "msg_1793267202775_a6hds"
+    ],
+    "conv_saved_user_1793207661564_eeb8": [
+      "msg_saved_welcome_user_1793207661564_eeb8"
+    ],
+    "conv_saved_user_1793377242177_y5i7": [
+      "msg_saved_welcome_user_1793377242177_y5i7",
+      "msg_1793377272164_d25i7"
+    ],
+    "conv_saved_user_1793377280819_er2k": [
+      "msg_saved_welcome_user_1793377280819_er2k"
     ]
   },
   "callRecords": [],

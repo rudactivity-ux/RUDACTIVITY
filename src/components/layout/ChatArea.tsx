@@ -25,9 +25,12 @@ import {
   FileText,
   Forward,
   ChevronDown,
-  Plus
+  Plus,
+  Bookmark,
+  Cloud
 } from 'lucide-react';
 import { Message, Attachment } from '../../types/index.ts';
+import { useLanguage } from '../../context/LanguageContext.tsx';
 
 const POPULAR_REACTIONS = ['❤️', '👍', '👎', '🔥', '🎉', '😂', '😍', '👏', '🚀', '💯'];
 const EXTENDED_REACTIONS = [
@@ -64,6 +67,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
 
   const { user } = useAuth();
   const { initiateCall } = useCall();
+  const { language } = useLanguage();
 
   const [inputText, setInputText] = useState('');
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
@@ -125,11 +129,13 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
   if (!activeConversation) {
     return (
       <main className="flex-1 h-full flex flex-col items-center justify-center p-8 bg-slate-950 text-center">
-        <img
-          src="/src/assets/images/rudactivity_logo_1793024816643.jpg"
-          alt="RUDACTIVITY"
-          className="w-20 h-20 rounded-3xl object-cover ring-1 ring-indigo-500/30 opacity-70 mb-4"
-        />
+        <div className="w-20 h-20 rounded-3xl p-0.5 bg-gradient-to-tr from-cyan-400 via-sky-500 to-indigo-600 shadow-2xl shadow-cyan-500/20 ring-1 ring-cyan-400/30 mb-4">
+          <img
+            src="/src/assets/images/erudactivity_logo.jpg"
+            alt="E-RUDACTIVITY"
+            className="w-full h-full rounded-[22px] object-cover"
+          />
+        </div>
         <h2 className="text-xl font-bold text-white">Select a Chat or Channel</h2>
         <p className="text-xs text-slate-400 max-w-sm mt-1">
           Pick a conversation from the sidebar or start a new direct chat, community group, or broadcast channel.
@@ -271,6 +277,10 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
   };
 
   const currentTyping = typingUsers[activeConversation.id] || [];
+  const isSavedMessages = activeConversation.isSavedMessages || activeConversation.id.startsWith('conv_saved_');
+  const chatTitle = isSavedMessages
+    ? (language === 'rw' ? 'Ubutumwa Bwanjye (Saved)' : 'Saved Messages')
+    : activeConversation.title;
 
   return (
     <main className="flex-1 h-full flex flex-col bg-slate-950 relative overflow-hidden select-text">
@@ -291,27 +301,42 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
             className="flex items-center gap-3 cursor-pointer group"
           >
             <div className="relative">
-              <img
-                src={
-                  activeConversation.avatar ||
-                  (activeConversation.type === 'channel'
-                    ? '/src/assets/images/channel_cover_tech_1793024818739.jpg'
-                    : '/src/assets/images/rudactivity_logo_1793024816643.jpg')
-                }
-                alt={activeConversation.title}
-                className="w-10 h-10 rounded-full object-cover ring-1 ring-slate-800"
-              />
-              {activeConversation.type === 'direct' && activeConversation.otherUser?.isOnline && (
+              {isSavedMessages ? (
+                <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-sky-500 to-blue-600 flex items-center justify-center text-white ring-1 ring-sky-400/40 shadow-sm">
+                  <Bookmark size={20} className="fill-white/30" />
+                </div>
+              ) : (
+                <img
+                  src={
+                    activeConversation.avatar ||
+                    (activeConversation.type === 'channel'
+                      ? '/src/assets/images/channel_cover_tech_1793024818739.jpg'
+                      : '/src/assets/images/rudactivity_logo_1793024816643.jpg')
+                  }
+                  alt={chatTitle}
+                  className="w-10 h-10 rounded-full object-cover ring-1 ring-slate-800"
+                />
+              )}
+              {!isSavedMessages && activeConversation.type === 'direct' && activeConversation.otherUser?.isOnline && (
                 <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full ring-2 ring-slate-900" />
               )}
             </div>
 
             <div>
-              <h3 className="font-bold text-sm text-white group-hover:text-indigo-400 transition-colors">
-                {activeConversation.title}
+              <h3 className="font-bold text-sm text-white group-hover:text-indigo-400 transition-colors flex items-center gap-2">
+                <span>{chatTitle}</span>
+                {isSavedMessages && (
+                  <span className="text-[10px] px-1.5 py-0.2 rounded bg-sky-500/20 text-sky-300 font-normal">
+                    Cloud Storage
+                  </span>
+                )}
               </h3>
               <div className="text-[11px] text-slate-400">
-                {currentTyping.length > 0 ? (
+                {isSavedMessages ? (
+                  <span className="text-sky-400">
+                    {language === 'rw' ? 'Ububiko bwawe bwa burundu' : 'Your personal cloud storage'}
+                  </span>
+                ) : currentTyping.length > 0 ? (
                   <span className="text-indigo-400 animate-pulse font-medium">
                     {currentTyping.join(', ')} typing...
                   </span>
@@ -333,7 +358,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
 
         {/* Action Buttons */}
         <div className="flex items-center gap-1.5">
-          {activeConversation.type === 'direct' && (
+          {!isSavedMessages && activeConversation.type === 'direct' && (
             <>
               <button
                 onClick={handleInitiateVoiceCall}
@@ -362,6 +387,18 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
         </div>
       </header>
 
+      {/* Telegram Saved Messages Cloud Info Banner */}
+      {isSavedMessages && (
+        <div className="bg-gradient-to-r from-sky-950/60 to-slate-900 border-b border-sky-500/20 px-4 py-2.5 flex items-center gap-3 text-xs text-sky-200">
+          <Cloud size={16} className="text-sky-400 shrink-0" />
+          <p className="text-[11px] leading-relaxed">
+            {language === 'rw'
+              ? 'Ububiko bwawe bwo muri Cloud: Ohereza cyangwa wandike ubutumwa hano kugirango ububike, ubusange kuri telefone na mudasobwa yawe yose.'
+              : 'Forward messages here to save them, store media and notes, and access them from any of your devices.'}
+          </p>
+        </div>
+      )}
+
       {/* Pinned Message Banner */}
       {activeConversation.pinnedMessageId && (
         <div className="bg-slate-900/90 border-b border-indigo-500/20 px-4 py-2 flex items-center justify-between text-xs text-slate-300">
@@ -389,8 +426,26 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
           </div>
         ) : messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center text-xs text-slate-500 py-12">
-            <p>No messages yet in this conversation.</p>
-            <p className="mt-1">Say hello or share a message to start communicating!</p>
+            {isSavedMessages ? (
+              <>
+                <div className="w-16 h-16 rounded-3xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 mb-3 shadow-inner">
+                  <Bookmark size={28} className="fill-sky-400/20" />
+                </div>
+                <h4 className="font-semibold text-white text-sm">
+                  {language === 'rw' ? 'Ububiko bwawe bwo muri Cloud' : 'Your Personal Cloud Storage'}
+                </h4>
+                <p className="mt-1 text-slate-400 max-w-xs">
+                  {language === 'rw'
+                    ? 'Bika ubutumwa, amafoto, dosiye, cyangwa inyandiko zawe hano. Koresha ubu bubiko nkaho ari agasanduku kawe k\'ibanga.'
+                    : 'Save messages, photos, files, or personal notes here. Access everything seamlessly from any device.'}
+                </p>
+              </>
+            ) : (
+              <>
+                <p>No messages yet in this conversation.</p>
+                <p className="mt-1">Say hello or share a message to start communicating!</p>
+              </>
+            )}
           </div>
         ) : (
           messages.map((msg, index) => {

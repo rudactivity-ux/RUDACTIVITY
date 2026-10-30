@@ -94,6 +94,7 @@ export interface Conversation {
   isMuted?: boolean;
   isArchived?: boolean;
   isPinned?: boolean;
+  isSavedMessages?: boolean;
   otherUser?: User | null;
   lastMessage?: {
     id: string;

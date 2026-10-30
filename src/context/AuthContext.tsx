@@ -17,6 +17,9 @@ interface AuthContextType {
   privacySettings: PrivacySettings;
   updatePrivacy: (settings: Partial<PrivacySettings>) => Promise<boolean>;
   blockedUserIds: string[];
+  telegramSendCode: (data: { phone?: string; email?: string }) => Promise<{ success: boolean; error?: string; message?: string; codePreview?: string; isExistingUser?: boolean; userPreview?: any }>;
+  telegramVerifyCode: (data: { phone?: string; email?: string; code: string }) => Promise<{ success: boolean; isNewUser?: boolean; error?: string; message?: string }>;
+  telegramCompleteSignup: (data: { phone?: string; email?: string; name: string; username: string; bio?: string; avatar?: string; password?: string }) => Promise<{ success: boolean; error?: string; message?: string }>;
   blockUser: (targetId: string) => Promise<boolean>;
   unblockUser: (targetId: string) => Promise<boolean>;
   switchAccount: (emailOrUser: string, pass: string) => Promise<boolean>;
@@ -36,12 +39,15 @@ async function parseJsonResponse(res: Response, fallbackError = 'Request failed'
     try {
       return await res.json();
     } catch (e) {
-      return { error: 'Invalid JSON response from server.' };
+      return { error: 'Invalid response from server.' };
     }
   }
   const text = await res.text();
-  console.error('Server returned non-JSON response:', res.status, text.slice(0, 200));
-  return { error: res.ok ? fallbackError : `Server error (${res.status}). Please try again.` };
+  console.warn('Server non-JSON response:', res.status, text.slice(0, 150));
+  if (res.status === 404) {
+    return { error: 'Iseriveri ntiraboneka cyangwa iri gutunganywa. Nyamuneka ongera ugerageze mu kanya gato.' };
+  }
+  return { error: res.ok ? fallbackError : `Service notice (${res.status}). Please try again.` };
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -225,6 +231,82 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const telegramSendCode = async (data: { phone?: string; email?: string }) => {
+    try {
+      const res = await fetch('/api/auth/telegram/send-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      const resData = await parseJsonResponse(res, 'Failed to send confirmation code');
+      if (!res.ok) {
+        return { success: false, error: resData.error || 'Failed to send confirmation code' };
+      }
+      return {
+        success: true,
+        message: resData.message,
+        codePreview: resData.codePreview,
+        isExistingUser: resData.isExistingUser,
+        userPreview: resData.userPreview,
+      };
+    } catch (err: any) {
+      return { success: false, error: err.message || 'Network error sending confirmation code.' };
+    }
+  };
+
+  const telegramVerifyCode = async (data: { phone?: string; email?: string; code: string }) => {
+    try {
+      const res = await fetch('/api/auth/telegram/verify-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      const resData = await parseJsonResponse(res, 'Verification failed');
+      if (!res.ok) {
+        return { success: false, error: resData.error || 'Verification failed' };
+      }
+      if (resData.token && resData.user) {
+        localStorage.setItem('rudactivity_token', resData.token);
+        setToken(resData.token);
+        setUser(resData.user);
+        loadPrivacy(resData.token);
+      }
+      return {
+        success: true,
+        isNewUser: resData.isNewUser,
+        message: resData.message,
+      };
+    } catch (err: any) {
+      return { success: false, error: err.message || 'Network error during verification.' };
+    }
+  };
+
+  const telegramCompleteSignup = async (data: { phone?: string; email?: string; name: string; username: string; bio?: string; avatar?: string; password?: string }) => {
+    try {
+      const res = await fetch('/api/auth/telegram/complete-signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      const resData = await parseJsonResponse(res, 'Failed to complete profile');
+      if (!res.ok) {
+        return { success: false, error: resData.error || 'Failed to complete profile' };
+      }
+      if (resData.token && resData.user) {
+        localStorage.setItem('rudactivity_token', resData.token);
+        setToken(resData.token);
+        setUser(resData.user);
+        loadPrivacy(resData.token);
+      }
+      return {
+        success: true,
+        message: resData.message || 'Account created successfully! Welcome to E-RUDACTIVITY.',
+      };
+    } catch (err: any) {
+      return { success: false, error: err.message || 'Network error during registration.' };
+    }
+  };
+
   const logout = async () => {
     if (token) {
       try {
@@ -381,6 +463,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         privacySettings,
         updatePrivacy,
         blockedUserIds,
+        telegramSendCode,
+        telegramVerifyCode,
+        telegramCompleteSignup,
         blockUser,
         unblockUser,
         switchAccount,

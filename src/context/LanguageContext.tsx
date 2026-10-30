@@ -72,6 +72,18 @@ export interface Translations {
   registerSuccess: string;
   logout: string;
 
+  // Telegram Authentication & Flow
+  phoneAuthTab: string;
+  emailAuthTab: string;
+  telegramPhonePrompt: string;
+  telegramCodePrompt: string;
+  enterCode: string;
+  resendCode: string;
+  telegramProfileTitle: string;
+  telegramProfileSubtitle: string;
+  savedMessages: string;
+  startMessaging: string;
+
   // Sidebar & Navigation
   chats: string;
   groups: string;
@@ -205,6 +217,18 @@ const TRANSLATIONS: Record<Language, Translations> = {
     registerSuccess: 'Account created successfully! Welcome to E-RUDACTIVITY.',
     logout: 'Log Out',
 
+    // Phone Number Authentication & Flow
+    phoneAuthTab: 'Phone Number',
+    emailAuthTab: 'Email & Password',
+    telegramPhonePrompt: 'Enter your phone number to sign in or create an account',
+    telegramCodePrompt: "We've sent a 6-digit confirmation code to your phone",
+    enterCode: 'Enter 6-Digit Code',
+    resendCode: 'Resend Code',
+    telegramProfileTitle: 'Set Up Your Profile',
+    telegramProfileSubtitle: 'Enter your name and choose your unique @username handle',
+    savedMessages: 'Saved Messages',
+    startMessaging: 'Start Messaging',
+
     // Sidebar & Navigation
     chats: 'Direct Chats',
     groups: 'Groups',
@@ -335,6 +359,18 @@ const TRANSLATIONS: Record<Language, Translations> = {
     loginSuccess: 'Winjiye neza!',
     registerSuccess: 'Konte yawe yakozwe neza! Murakaza neza muri E-RUDACTIVITY.',
     logout: 'Gusohoka',
+
+    // Phone Number Authentication & Flow
+    phoneAuthTab: 'Nimero ya Telefone (Phone Number)',
+    emailAuthTab: 'Email & Ijambobanga',
+    telegramPhonePrompt: 'Injiza nimero ya telefone yawe kugira ngo winjire cyangwa wiyandikishe',
+    telegramCodePrompt: "Twohereje kode y'imibare 6 muri telefone yawe",
+    enterCode: "Injiza Kode y'Imibare 6",
+    resendCode: 'Ongera wohereze kode',
+    telegramProfileTitle: 'Tegura Porofayili Yawe',
+    telegramProfileSubtitle: "Injiza amazina yawe n'izina ry'ukoresha ryihariye (@handle)",
+    savedMessages: 'Ubutumwa Bwanjye (Saved Messages)',
+    startMessaging: 'Tangira Ubutumwa',
 
     // Sidebar & Navigation
     chats: 'Ubutumwa Butaziguye',
